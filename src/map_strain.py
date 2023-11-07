@@ -19,14 +19,17 @@ def compute_local_strain(strain_df):
 def compute_perceived_strain(strain_df):
     current_strain = 0
     for index, row in strain_df.iterrows():
-        if row['divisor_between_objects'] <= 1:
+        if row['divisor_between_objects'] <= 1 or row['divisor_next_group'] < 1:
             current_strain = 0
-        elif row['divisor_next_group'] < 1:
+        elif row['divisor_next_group'] == 1:
             current_strain += row['local_strain']
             strain_df.at[index, 'perceived_strain'] = current_strain
             current_strain /= 2
         else:
-            current_strain += row['local_strain']
+            proposed_strain = current_strain + row['local_strain']
+            if proposed_strain > row['local_strain'] * STRAIN_UPPER_BOUND_MULTIPLIER:
+                proposed_strain = row['local_strain'] * STRAIN_UPPER_BOUND_MULTIPLIER
+            current_strain = proposed_strain
             strain_df.at[index, 'perceived_strain'] = current_strain
     return strain_df
 

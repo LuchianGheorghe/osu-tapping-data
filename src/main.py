@@ -1,58 +1,79 @@
+import time
 import pandas as pd
 import matplotlib.pyplot as plt	
 from sqlalchemy import create_engine, text
 from helper import get_map_ids_from_file, round_divisor, print_t
 from map_chunks import get_chunks_df
 from map_categories import get_categories_df, get_categories_df_n
-from map_objects import get_objects_df
+from map_objects import get_objects_df, get_beatmap_data
+from map_info import get_map_info_df
 from map_strain import get_strain_df
 from map_groups import get_groups_df
-from db_manager import init_db, add_maps_to_db, read_maps_from_db
+from db_manager import init_db, add_maps_to_db, read_maps_from_db, read_maps_info_from_db
+from osu_db import MapsDB
 
 from beatmap_reader import BeatmapIO
 
 
+def test(value, modifier):
+	result = value + value / modifier
+	if result < 0:
+		return 0
+	return result
+
+
+def get_similar_condition_ids(df, map_id, divisor, columns):
+	map_df = df.loc[(df.map_id == map_id) & (df.divisor == divisor)]
+	columns_values_dict = {}
+	for _, row in map_df.iterrows():
+		columns_values_dict = row[columns].to_dict()
+	columns_values_dict = dict(sorted(columns_values_dict.items(), key=lambda x: x[1], reverse=True))
+
+	conditions = []
+	for column, value in columns_values_dict.items():
+		# print(value, test(value, -2), test(value, 2))
+		conditions.append(df[column].between(test(value, -2), test(value, 2)))
+
+	final_condition = df.divisor == divisor
+	for condition in conditions:
+		final_condition = final_condition & condition
+
+	return set(df.loc[final_condition].map_id.to_list())
+
+
 def main(*map_ids, path=None):
-	if path:
-		map_ids = get_map_ids_from_file(path)
-	
-	if map_ids != ():
-		init_db(recreate_db=False)
-		add_maps_to_db(map_ids, update_entry=False)
-	
-	# strain_df = get_strain_df(625507)
-	# strain_df[['local_strain', 'perceived_strain']].plot()
-	# plt.show()
+	df = get_groups_df(map_ids[0])
+	df['between_divisor'] = df['beat_length'].div(df['time_between_objects']).round(decimals=2)
+	df['next_divisor'] = df['beat_length'].div(df['time_next_group']).round(decimals=2)
+	df = df.drop(labels=['time_between_objects', 'time_next_group'], axis=1)
 
-	df = read_maps_from_db()
-	df_2 = df[df.divisor == 4].sort_values('stream_strain').reset_index(drop=True)
-	index = int(df_2.loc[df_2.map_id == 847313].index.values)
-	similar_maps = df_2.iloc[index - 3 : index + 4].copy()
-	similar_maps_ids = similar_maps.map_id.to_list()
-	for similar_map_id in similar_maps_ids:
-		print(df[df['map_id'] == similar_map_id])
-		print()
+	plt.scatter('start_time', 'object_count', c='between_divisor', data=df, cmap='viridis')
+	plt.colorbar()
+	plt.xlabel('start_time')
+	plt.ylabel('object_count')
+	plt.title('Scatter Plot Colored by between_divisor')
+	plt.show()
 
-	import webbrowser
-	for similar_map_id in similar_maps_ids:
-		webbrowser.open(f'https://osu.ppy.sh/b/{similar_map_id}')
+	# if path:
+	# 	map_ids = get_map_ids_from_file(path)
 
-	# print(df.loc[df.divisor == 4].sort_values('stream_groups', ascending=False).head(25))
+	# if map_ids != ():
+	# 	init_db(recreate_db=False)
+	# 	add_maps_to_db(map_ids, update_entry=False)
 
-	# for map_id in [3669075]:
-	# 	print(get_categories_df_n(map_id, strain_type='perceived_strain').sort_values('divisor', ascending=False))
-	# 	print()
+	# df = read_maps_from_db()
+
+	# for map_id in map_ids: 
+	# 	print(df.loc[df.map_id == map_id])
 	
 
 if __name__ == '__main__':
 	try:
-		main(863364)
+		main(2719326)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
 		print(non_std_gamemode)
-	except Exception as e:
-		print(e)
 
 	# main(918415, 898597, 1845874)  # I'm afraid to suck a dick
 	# main(221777, 776951)
@@ -103,3 +124,43 @@ if __name__ == '__main__':
 	# main(3665005) # glory days
 	# main(516322) # love sick
 	# main(path='test.txt') 
+
+	'''
+		# print(df.sort_values('finger_control_groups', ascending=False))
+
+	# strain_df = get_strain_df(3106044)
+	# strain_df[['local_strain', 'perceived_strain']].plot()
+	# plt.show()
+
+	# map_id = 2105741
+	# print(df.loc[df.map_id == map_id])
+
+	# similar_div2_total_strain_ids = get_similar_condition_ids(df, map_id, 2, ['stream_strain', 'burst_strain'])
+	# similar_div4_category_groups_ids = get_similar_condition_ids(df, map_id, 4, ['total_strain'])
+	# conditions_intersection = list(set.intersection(similar_div2_total_strain_ids, similar_div4_category_groups_ids))
+
+	# similar_maps_df = df.loc[(df.map_id.isin(similar_div4_category_groups_ids)) & (df.divisor == 4)] \
+	# similar_maps_df = df.loc[(df.divisor == 4)] \
+	# 				.sort_values(['stream_strain', 'burst_strain']) \
+	# 				.reset_index(drop=True)
+	# index = similar_maps_df.loc[similar_maps_df.map_id == map_id].index.values[0]
+	# similar_maps_df = similar_maps_df.iloc[index - 3 : index + 4].copy()
+	# similar_maps_ids = similar_maps_df.map_id.to_list()
+
+	# for similar_map_id in similar_maps_ids:
+	# 	print(df[df['map_id'] == similar_map_id].sort_values('divisor', ascending=False))
+	# 	print()
+
+	# import webbrowser
+	# for similar_map_id in similar_maps_ids:
+	# 	webbrowser.open(f'https://osu.ppy.sh/b/{similar_map_id}')
+	# 	time.sleep(0.2)
+
+	# print(df.loc[df.divisor == 4].sort_values('stream_groups', ascending=False).head(25))
+
+	# for map_id in []:
+	# 	strain_df = get_strain_df(map_id, update_entry=True)
+	# 	categories_df = get_categories_df_n(map_id, strain_type='perceived_strain')
+	# 	print(categories_df)
+	# 	print()
+	'''

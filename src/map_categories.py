@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from helper import print_t, create_empty_series, list_details
 from map_strain import get_strain_df
+from map_groups import get_groups_df
 
 
 def cast_types(categories_df):
@@ -110,6 +111,26 @@ def get_categories_df(map_id, strain_type):
 
 def get_categories_df_n(map_id, strain_type):
     df = get_categories_df(map_id, strain_type)
+
+    columns = ['map_id', 'divisor', 
+                'total_strain_n', 
+                'finger_control_strain_n', 'burst_strain_n', 'stream_strain_n', 'deathstream_strain_n',
+                'total_groups_n', 'finger_control_groups_n', 'burst_groups_n',  'stream_groups_n', 'deathstream_groups_n']
+    categories_df_n = pd.DataFrame(columns=columns)
+    categories_df_n['map_id'] = df['map_id']
+    categories_df_n['divisor'] = df['divisor']
+
+    map_length = get_groups_df(map_id).tail(1)['end_time'].values[0] / 60000
+
     for category in ['total', 'finger_control', 'burst', 'stream', 'deathstream']:
-        df[f'{category}_strain'] = df[f'{category}_strain'].div(df[f'{category}_groups'], fill_value=0)
-    return df.fillna(0)
+        categories_df_n[f'{category}_strain_n'] = df[f'{category}_strain'].div(df[f'{category}_groups']).round(decimals=2)
+        categories_df_n[f'{category}_groups_n'] = df[f'{category}_groups'].div(map_length).round(decimals=2)
+
+    for index, row in categories_df_n.iterrows():
+        types_of_strain_count = row[['finger_control_strain_n', 'burst_strain_n', 'stream_strain_n', 'deathstream_strain_n']].count()
+        categories_df_n.at[index, 'total_strain_n'] = (row['total_strain_n'] * types_of_strain_count) / 4
+
+    categories_df_n = categories_df_n.fillna(0)
+    categories_df_n = categories_df_n.sort_values('divisor', ascending=False)
+
+    return categories_df_n
