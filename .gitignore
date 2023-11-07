@@ -1,0 +1,10 @@
+share
+Scripts
+net6.0
+Lib
+Include
+data
+cache
+src/beatmaps
+src/data
+src/__pycache__
