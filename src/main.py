@@ -39,44 +39,27 @@ def get_similar_condition_ids(df, map_id, divisor, columns):
 
 	return set(df.loc[final_condition].map_id.to_list())
 
-def normalize_count(object_count_row):
-	if object_count_row <= 4:
-		return 4 #'1-4'
-	elif object_count_row > 4 and object_count_row <= 8:
-		return 8 #'5-8'
-	elif object_count_row > 8 and object_count_row <= 16:
-		return 16 #'9-16'
-	elif object_count_row > 16 and object_count_row <= 32:
-		return 32 #'17-32'
-	elif object_count_row > 32 and object_count_row <= 64:
-		return 64 #'32-64'
-	elif object_count_row > 64:
-		return 128 #'64+'
-
 
 def main(*map_ids, path=None):
-    df = get_groups_df(map_ids[0])
-    df['between_divisor'] = df['beat_length'].div(df['time_between_objects']).round(decimals=2)
-    df['next_divisor'] = df['beat_length'].div(df['time_next_group']).round(decimals=2)
-    df['object_count_n'] = df['object_count'].apply(normalize_count)
-    df = df.drop(labels=['time_between_objects', 'time_next_group', 'next_divisor', 'beat_length'], axis=1)
+	df = get_groups_df(map_ids[0], update_entry=True)
+	#df = df.drop(labels=['time_between_objects', 'time_next_group', 'next_divisor', 'beat_length'], axis=1)
 
-    df = df.sort_values(by=['between_divisor', 'object_count_n'], ascending=False)
-    #print(df['index'])
-    #print(df.index)
+	map_plot = plt.figure().add_subplot(111, projection='3d').scatter(df['start_time'], df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
+	plt.colorbar(map_plot)
 
-    plt.scatter(df.index, 'between_divisor', c='between_divisor', data=df, cmap='viridis')
-    plt.colorbar()
-    plt.xlabel('start_time')
-    plt.ylabel('object_count')
-    plt.title('Scatter Plot Colored by between_divisor')
-    plt.show()
+	df = df.sort_values(by=['between_divisor', 'object_count_n'], ascending=False).reset_index(drop=True)
+	print(df)
 
-    #fig = plt.figure()
-    #ax = fig.add_subplot(111, projection='3d')
-    #sc = ax.scatter(df['start_time'], df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
-    #plt.colorbar(sc)
-    #plt.show()
+	# plt.scatter(df.index, df['object_count_n'], c=df['between_divisor'], cmap='Accent')
+	# plt.xlabel('start_time')
+	# plt.ylabel('object_count')
+	# plt.title('Scatter Plot Colored by between_divisor')
+	# plt.colorbar()
+
+	sorted_map_plot = plt.figure().add_subplot(111, projection='3d').scatter(df.index, df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
+	plt.colorbar(sorted_map_plot)
+	
+	plt.show()
 
     # if path:
     # 	map_ids = get_map_ids_from_file(path)
@@ -93,7 +76,7 @@ def main(*map_ids, path=None):
 
 if __name__ == '__main__':
 	try:
-		main(1193177)
+		main(3261335)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
@@ -147,6 +130,7 @@ if __name__ == '__main__':
 	# main(2983479) # lion heart
 	# main(3665005) # glory days
 	# main(516322) # love sick
+	# main(3261335) # carless claris - 1/3s
 	# main(path='test.txt') 
 
 	'''

@@ -29,7 +29,7 @@ def round_divisor(value):
         return 1
     if value == round(value):
         return value
-    thresholds = [0, 12.5, 25, 33, 50, 66, 75, 87.5, 100]
+    thresholds = [0, 25, 33, 50, 66, 75, 100]
     digits = (value * 100) % 100
     output = 0.0
     for i in range(9):
