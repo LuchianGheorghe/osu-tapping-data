@@ -5,6 +5,7 @@ Lib
 Include
 data
 cache
+pyvenv.cfg
 src/beatmaps
 src/data
 src/__pycache__

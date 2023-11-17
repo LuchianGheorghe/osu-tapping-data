@@ -55,43 +55,45 @@ def normalize_count(object_count_row):
 
 
 def main(*map_ids, path=None):
-	df = get_groups_df(map_ids[0])
-	df['between_divisor'] = df['beat_length'].div(df['time_between_objects']).round(decimals=2)
-	df['next_divisor'] = df['beat_length'].div(df['time_next_group']).round(decimals=2)
-	df['object_count_n'] = df['object_count'].apply(normalize_count)
-	df = df.drop(labels=['time_between_objects', 'time_next_group'], axis=1)
+    df = get_groups_df(map_ids[0])
+    df['between_divisor'] = df['beat_length'].div(df['time_between_objects']).round(decimals=2)
+    df['next_divisor'] = df['beat_length'].div(df['time_next_group']).round(decimals=2)
+    df['object_count_n'] = df['object_count'].apply(normalize_count)
+    df = df.drop(labels=['time_between_objects', 'time_next_group', 'next_divisor', 'beat_length'], axis=1)
 
-	print(df['object_count_n'])
+    df = df.sort_values(by=['between_divisor', 'object_count_n'], ascending=False)
+    #print(df['index'])
+    #print(df.index)
 
-	# plt.scatter('start_time', 'between_divisor', c='between_divisor', data=df, cmap='viridis')
-	# plt.colorbar()
-	# plt.xlabel('start_time')
-	# plt.ylabel('object_count')
-	# plt.title('Scatter Plot Colored by between_divisor')
-	# plt.show()
+    plt.scatter(df.index, 'between_divisor', c='between_divisor', data=df, cmap='viridis')
+    plt.colorbar()
+    plt.xlabel('start_time')
+    plt.ylabel('object_count')
+    plt.title('Scatter Plot Colored by between_divisor')
+    plt.show()
 
-	fig = plt.figure()
-	ax = fig.add_subplot(111, projection='3d')
-	sc = ax.scatter(df['start_time'], df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
-	plt.colorbar(sc)
-	plt.show()
+    #fig = plt.figure()
+    #ax = fig.add_subplot(111, projection='3d')
+    #sc = ax.scatter(df['start_time'], df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
+    #plt.colorbar(sc)
+    #plt.show()
 
-	# if path:
-	# 	map_ids = get_map_ids_from_file(path)
+    # if path:
+    # 	map_ids = get_map_ids_from_file(path)
 
-	# if map_ids != ():
-	# 	init_db(recreate_db=False)
-	# 	add_maps_to_db(map_ids, update_entry=False)
+    # if map_ids != ():
+    # 	init_db(recreate_db=False)
+    # 	add_maps_to_db(map_ids, update_entry=False)
 
-	# df = read_maps_from_db()
+    # df = read_maps_from_db()
 
-	# for map_id in map_ids: 
-	# 	print(df.loc[df.map_id == map_id])
+    # for map_id in map_ids: 
+    # 	print(df.loc[df.map_id == map_id])
 	
 
 if __name__ == '__main__':
 	try:
-		main(668662)
+		main(1193177)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
