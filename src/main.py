@@ -9,6 +9,7 @@ from map_objects import get_objects_df, get_beatmap_data
 from map_info import get_map_info_df
 from map_strain import get_strain_df
 from map_groups import get_groups_df
+from map_clusters import get_clusters_df
 from db_manager import init_db, add_maps_to_db, read_maps_from_db, read_maps_info_from_db
 from osu_db import MapsDB
 
@@ -41,14 +42,15 @@ def get_similar_condition_ids(df, map_id, divisor, columns):
 
 
 def main(*map_ids, path=None):
-	df = get_groups_df(map_ids[0], update_entry=True)
+	df = get_clusters_df(map_ids[0])
+	print(df)
 	#df = df.drop(labels=['time_between_objects', 'time_next_group', 'next_divisor', 'beat_length'], axis=1)
 
-	map_plot = plt.figure().add_subplot(111, projection='3d').scatter(df['start_time'], df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
-	plt.colorbar(map_plot)
+	#map_plot = plt.figure().add_subplot(111, projection='3d').scatter(df['start_time'], df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
+	#plt.colorbar(map_plot)
 
-	df = df.sort_values(by=['between_divisor', 'object_count_n'], ascending=False).reset_index(drop=True)
-	print(df)
+	#df = df.sort_values(by=['between_divisor', 'object_count_n'], ascending=False).reset_index(drop=True)
+	#print(df)
 
 	# plt.scatter(df.index, df['object_count_n'], c=df['between_divisor'], cmap='Accent')
 	# plt.xlabel('start_time')
@@ -56,10 +58,10 @@ def main(*map_ids, path=None):
 	# plt.title('Scatter Plot Colored by between_divisor')
 	# plt.colorbar()
 
-	sorted_map_plot = plt.figure().add_subplot(111, projection='3d').scatter(df.index, df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
-	plt.colorbar(sorted_map_plot)
+	# sorted_map_plot = plt.figure().add_subplot(111, projection='3d').scatter(df.index, df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
+	# plt.colorbar(sorted_map_plot)
 	
-	plt.show()
+	# plt.show()
 
     # if path:
     # 	map_ids = get_map_ids_from_file(path)
