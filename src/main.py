@@ -42,8 +42,8 @@ def get_similar_condition_ids(df, map_id, divisor, columns):
 
 
 def main(*map_ids, path=None):
-	df = get_clusters_df(map_ids[0])
-	print(df)
+	df = get_clusters_df(map_ids[0], update_entry=True)
+	
 	#df = df.drop(labels=['time_between_objects', 'time_next_group', 'next_divisor', 'beat_length'], axis=1)
 
 	#map_plot = plt.figure().add_subplot(111, projection='3d').scatter(df['start_time'], df['between_divisor'], df['object_count_n'], c=df['between_divisor'], cmap='Accent')
@@ -78,7 +78,7 @@ def main(*map_ids, path=None):
 
 if __name__ == '__main__':
 	try:
-		main(3261335)
+		main(3257371)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
