@@ -42,7 +42,9 @@ def get_similar_condition_ids(df, map_id, divisor, columns):
 
 
 def main(*map_ids, path=None):
-	df = get_clusters_df(map_ids[0], update_entry=True)
+	for map_id in map_ids:
+		get_clusters_df(map_id, update_entry=True)
+		print()
 	
 	#df = df.drop(labels=['time_between_objects', 'time_next_group', 'next_divisor', 'beat_length'], axis=1)
 
@@ -78,13 +80,13 @@ def main(*map_ids, path=None):
 
 if __name__ == '__main__':
 	try:
-		main(3257371)
+		main(351752, 429989)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
 		print(non_std_gamemode)
 
-	# main(918415, 898597, 1845874)  # I'm afraid to suck a dick
+	# main(918415, 898597, 1845874)  # feelin sky
 	# main(221777, 776951)
 	# main(2983479, 3665005)  # lion heart vs glory days
 	# main(574471, 955864, 290581, 516322)  # best friends vs m flat vs diamond vs love sick
@@ -109,6 +111,7 @@ if __name__ == '__main__':
 	# main(952010) # eclipse parade
 	# main(1193177) # neuro-cloud-9
 	# main(768454) # brazil easter
+	# main(847314) # tower of heaven
 	# main(817155) # transcend chillout
 	# main(292574) # cheatreal square practice
 	# main(915058) # soukai rock ely

@@ -26,12 +26,14 @@ def cast_types(df_groups):
 
 
 def normalize_count(object_count_row):
-	
 	if object_count_row <= 4:
 		return 4 #'1-4'
 	elif object_count_row > 4 and object_count_row <= 8:
 		return 8 #'5-8'
-	elif object_count_row > 8 and object_count_row <= 16:
+	else:
+		return 16 #'16+'
+	
+	if object_count_row > 8 and object_count_row <= 16:
 		return 16 #'9-16'
 	elif object_count_row > 16 and object_count_row <= 32:
 		return 32 #'17-32'
