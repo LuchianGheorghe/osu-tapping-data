@@ -1,7 +1,7 @@
-from groups_data.similar_groups_statistics import describe_similar_groups
-from groups_data.similar_groups_parsing import get_similar_groups_dfs_dict
-from groups_data.objects_parsing import get_objects_df
-from groups_data.groups_parsing import get_groups_df
+from tapping_data.similar_groups_statistics import describe_similar_groups
+from tapping_data.similar_groups_parsing import get_similar_groups_dfs_dict
+from tapping_data.objects_parsing import get_objects_df
+from tapping_data.groups_parsing import get_groups_df
 from beatmap_reader import BeatmapIO
 
 

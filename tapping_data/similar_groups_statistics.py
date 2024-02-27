@@ -18,13 +18,6 @@ def compute_statistics(data: list[float]) -> list[float]:
 
     return [round(summary.mean, 2), round(summary.variance**0.5, 2), summary.minmax[0], q1, q2, q3, summary.minmax[1]]
 
-    print(f'{data=}')
-    print("Mean:", summary.mean)
-    print("Standard Deviation:", summary.variance**0.5)
-    print("Minimum:", summary.minmax[0])
-    print("Maximum:", summary.minmax[1])
-    print(q1, q2, q3)
-
 
 def describe_similar_groups(similar_groups_dfs_dict: dict[str: list[pd.DataFrame]]) -> list[float]:
     """
@@ -54,11 +47,11 @@ def describe_similar_groups(similar_groups_dfs_dict: dict[str: list[pd.DataFrame
             if len(n_time_between_values) == 0:
                 n_time_between_values.append(0)
         
-        # print()
-        # print(f'{n_time_between_values=}')
-        # print(f'{object_count_values=}')
-        # print(f'{section_length_values=}')
-        # print()
+        print()
+        print(f'{n_time_between_values=}')
+        print(f'{object_count_values=}')
+        print(f'{section_length_values=}')
+        print()
         print(compute_statistics(n_time_between_values))
         print(compute_statistics(object_count_values))
         print(compute_statistics(section_length_values))
