@@ -25,34 +25,42 @@ def describe_similar_groups(similar_groups_dfs_dict: dict[str: list[pd.DataFrame
     """
     
     for key in similar_groups_dfs_dict:
-        if not ('4.0' in key):
+        if not ('16' in key and '4.0' in key):
             continue
         print(key)
         # print(similar_groups_dfs_dict[key])
 
-        n_time_between_values = []
-        object_count_values = []
-        section_length_values = []
+        section_group_counts_list = []
+        n_time_between_sections_list = []
+        group_object_counts_list = []
+        n_time_between_groups_list = []
 
-        for similar_group_df in similar_groups_dfs_dict[key]:
+        prev_end_time = 0
+        for section_df in similar_groups_dfs_dict[key]:
 
-            section_length_values.append(similar_group_df.shape[0])
-            object_count_values += similar_group_df.object_count.tolist()
+            print(section_df)
 
-            prev_end_time = similar_group_df.iloc[0].start_time
-            for _, row in similar_group_df.iterrows():
+            first_group = section_df.iloc[0]
+
+            section_group_counts_list.append(section_df.shape[0])
+            n_time_between_sections_list.append(round((first_group.start_time - prev_end_time) / first_group.beat_length, 2))
+            group_object_counts_list += section_df.object_count.tolist()
+
+            prev_end_time = first_group.start_time
+            for _, row in section_df.iterrows():
                 n_time_between = round((row.start_time - prev_end_time) / row.beat_length, 2)
-                if n_time_between != 0: n_time_between_values.append(n_time_between)
+                if n_time_between != 0: 
+                    n_time_between_groups_list.append(n_time_between)
                 prev_end_time = row.end_time
-            if len(n_time_between_values) == 0:
-                n_time_between_values.append(0)
         
         print()
-        print(f'{n_time_between_values=}')
-        print(f'{object_count_values=}')
-        print(f'{section_length_values=}')
+        print(f'{section_group_counts_list=}')
+        print(f'{n_time_between_sections_list=}')
+        print(f'{group_object_counts_list=}')
+        print(f'{n_time_between_groups_list=}')
         print()
-        print(compute_statistics(n_time_between_values))
-        print(compute_statistics(object_count_values))
-        print(compute_statistics(section_length_values))
+        print(compute_statistics(section_group_counts_list))
+        print(compute_statistics(n_time_between_sections_list))
+        print(compute_statistics(group_object_counts_list))
+        print(compute_statistics(n_time_between_groups_list))
         print()
