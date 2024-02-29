@@ -10,17 +10,17 @@ def main(*map_ids, path=None):
 		print(map_id)
 		objects_df = get_objects_df(map_id, update_entry=True)
 		groups_df = get_groups_df(map_id, update_entry=True)
-		visualize_sections(groups_df)
+		# visualize_sections(groups_df)
 		similar_groups = get_similar_groups_dfs_dict(groups_df)
 		# for section in similar_groups:
-			# print(similar_groups[section])
-		#get_sections_statistics(similar_groups)
-		# print()
+		# 	print(similar_groups[section])
+		get_sections_statistics(similar_groups)
+		print()
 
 
 if __name__ == '__main__':
 	try:
-		main(668662)
+		main(321946, 238265)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:

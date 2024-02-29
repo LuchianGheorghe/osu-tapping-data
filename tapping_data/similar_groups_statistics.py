@@ -25,7 +25,7 @@ def get_sections_statistics(similar_groups_dfs_dict: dict[str: list[pd.DataFrame
     """
     
     for key in similar_groups_dfs_dict:
-        if not ('16' in key and '4.0' in key):
+        if not (('16' in key or '8' in key) and '4.0' in key):
             continue
         print(key)
         # print(similar_groups_dfs_dict[key])
@@ -38,7 +38,7 @@ def get_sections_statistics(similar_groups_dfs_dict: dict[str: list[pd.DataFrame
         prev_end_time = 0
         for section_df in similar_groups_dfs_dict[key]:
 
-            print(section_df)
+            # print(section_df)
 
             first_group = section_df.iloc[0]
 
