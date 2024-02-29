@@ -1,5 +1,5 @@
-from tapping_data.similar_groups_statistics import describe_similar_groups
-from tapping_data.similar_groups_parsing import get_similar_groups_dfs_dict
+from tapping_data.similar_groups_statistics import get_sections_statistics
+from tapping_data.similar_groups_parsing import get_similar_groups_dfs_dict, visualize_sections
 from tapping_data.objects_parsing import get_objects_df
 from tapping_data.groups_parsing import get_groups_df
 from beatmap_reader import BeatmapIO
@@ -10,9 +10,12 @@ def main(*map_ids, path=None):
 		print(map_id)
 		objects_df = get_objects_df(map_id, update_entry=True)
 		groups_df = get_groups_df(map_id, update_entry=True)
+		visualize_sections(groups_df)
 		similar_groups = get_similar_groups_dfs_dict(groups_df)
-		describe_similar_groups(similar_groups)
-		print()
+		# for section in similar_groups:
+			# print(similar_groups[section])
+		#get_sections_statistics(similar_groups)
+		# print()
 
 
 if __name__ == '__main__':

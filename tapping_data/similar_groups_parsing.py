@@ -4,6 +4,29 @@ import numpy as np
 import jenkspy
 import bisect
 import math
+import matplotlib.pyplot as plt
+
+
+def visualize_sections(groups_df: pd.DataFrame) -> None:
+    """
+    
+    """
+    
+    map_plot = plt.figure().add_subplot(111, projection='3d').scatter(groups_df['start_time'], groups_df['between_divisor'], groups_df['object_count_n'], c=groups_df['between_divisor'], cmap='Accent')
+    plt.colorbar(map_plot)
+    plt.show()
+
+
+def visualize_sections_sorted(groups_df: pd.DataFrame) -> None:
+    """
+    
+    """
+    
+    groups_df_sorted = groups_df.sort_values(by=['between_divisor', 'object_count_n'], ascending=False).reset_index(drop=True)
+            
+    sorted_map_plot = plt.figure().add_subplot(111, projection='3d').scatter(groups_df_sorted.index, groups_df_sorted['between_divisor'], groups_df_sorted['object_count_n'], c=groups_df_sorted['between_divisor'], cmap='Accent')
+    plt.colorbar(sorted_map_plot)
+    plt.show()
 
 
 def get_similar_groups_by_divisor_and_count_n(groups_df: pd.DataFrame) -> dict[str: list[pd.DataFrame]]:

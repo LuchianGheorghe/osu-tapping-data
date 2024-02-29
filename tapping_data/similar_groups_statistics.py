@@ -19,7 +19,7 @@ def compute_statistics(data: list[float]) -> list[float]:
     return [round(summary.mean, 2), round(summary.variance**0.5, 2), summary.minmax[0], q1, q2, q3, summary.minmax[1]]
 
 
-def describe_similar_groups(similar_groups_dfs_dict: dict[str: list[pd.DataFrame]]) -> list[float]:
+def get_sections_statistics(similar_groups_dfs_dict: dict[str: list[pd.DataFrame]]) -> list[float]:
     """
     
     """
