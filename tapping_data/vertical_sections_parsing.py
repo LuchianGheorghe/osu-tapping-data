@@ -50,19 +50,19 @@ def merge_context_intervals_statistics(context_intervals_statistics: dict) -> di
 def get_vertical_sections(groups_df: pd.DataFrame, context_intervals: list) -> dict:
     context_intervals_statistics = {}
 
-    for interval in context_intervals:
-        start_index = interval[0]
-        end_index = interval[1] if len(interval) != 1 else interval[0]
+    # for interval in context_intervals:
+    #     start_index = interval[0]
+    #     end_index = interval[1] if len(interval) != 1 else interval[0]
 
-        context_df = groups_df.iloc[start_index:end_index+1]
-        context_similar_clusters = get_similar_clusters(context_df)
+    #     context_df = groups_df.iloc[start_index:end_index+1]
+    #     context_similar_clusters = get_similar_clusters(context_df)
 
-        for cluster in context_similar_clusters:
-            statistics = get_clusters_statistics(context_df, [context_similar_clusters[cluster]])
-            if cluster not in context_intervals_statistics.keys():
-                context_intervals_statistics[cluster] = [statistics]
-            else:
-                context_intervals_statistics[cluster].append(statistics)
+    #     for cluster in context_similar_clusters:
+    #         statistics = get_clusters_statistics(context_df, [context_similar_clusters[cluster]])
+    #         if cluster not in context_intervals_statistics.keys():
+    #             context_intervals_statistics[cluster] = [statistics]
+    #         else:
+    #             context_intervals_statistics[cluster].append(statistics)
 
     # for type in context_intervals_statistics:
     #     print(type)
