@@ -20,7 +20,7 @@ def main(*map_ids, path=None):
 
 if __name__ == '__main__':
 	try:
-		main(321946, 238265)
+		main(259)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:

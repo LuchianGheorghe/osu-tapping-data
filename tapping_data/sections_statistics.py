@@ -6,9 +6,9 @@ def compute_statistics(data: list[float]) -> list[float]:
     """
     
     """
-
-    if len(data) == 1 or len(set(data)) == 1:
-        value = data[0]
+    
+    if len(set(data)) <= 1:
+        value = data[0] if data else 0
         return [value, 0, value, value, value, value] 
 
     summary = stats.describe(data)
@@ -26,7 +26,7 @@ def get_sections_statistics(similar_groups_dfs_dict: dict[str: list[pd.DataFrame
     
     for key in similar_groups_dfs_dict:
         if not (('16' in key or '8' in key) and '4.0' in key):
-            continue
+           continue
         print(key)
         # print(similar_groups_dfs_dict[key])
 
@@ -49,7 +49,7 @@ def get_sections_statistics(similar_groups_dfs_dict: dict[str: list[pd.DataFrame
             prev_end_time = first_group.start_time
             for _, row in section_df.iterrows():
                 n_time_between = round((row.start_time - prev_end_time) / row.beat_length, 2)
-                if n_time_between != 0: 
+                if n_time_between != 0:
                     n_time_between_groups_list.append(n_time_between)
                 prev_end_time = row.end_time
         

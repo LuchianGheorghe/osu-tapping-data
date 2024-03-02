@@ -29,14 +29,14 @@ def visualize_sections_sorted(groups_df: pd.DataFrame) -> None:
     plt.show()
 
 
-def get_similar_groups_by_divisor_and_count_n(groups_df: pd.DataFrame) -> dict[str: list[pd.DataFrame]]:
+def get_sections_by_divisor_and_count_n(groups_df: pd.DataFrame) -> dict[str: list[pd.DataFrame]]:
     """
     
     """
     
     groups_df_sorted = groups_df.sort_values(by=['between_divisor', 'object_count_n'], ascending=False).reset_index(drop=True)
     
-    similar_groups = {}
+    sections = {}
     columns = groups_df.columns
     new_similar = pd.DataFrame(columns=columns)
 
@@ -47,17 +47,17 @@ def get_similar_groups_by_divisor_and_count_n(groups_df: pd.DataFrame) -> dict[s
             new_similar = curr_row.to_frame().T.reset_index(drop=True)
 
         if i == groups_df_sorted.shape[0] - 1:
-            similar_groups[key] = [new_similar]
+            sections[key] = [new_similar]
             break
 
         next_row = groups_df_sorted.iloc[i+1]
         if next_row['between_divisor'] == curr_row['between_divisor'] and next_row['object_count_n'] == curr_row['object_count_n']:
             new_similar = pd.concat([new_similar, next_row.to_frame().T], ignore_index=True)
         else:
-            similar_groups[key] = [new_similar]
+            sections[key] = [new_similar]
             new_similar = pd.DataFrame(columns=columns)
 
-    return similar_groups
+    return sections
 
 
 def split_list_at_values(sorted_list, split_values):
@@ -71,7 +71,7 @@ def split_list_at_values(sorted_list, split_values):
     return [sorted_list[split_indices[i]:split_indices[i + 1]] for i in range(len(split_indices) - 1) if split_indices[i] != split_indices[i + 1]]
 
 
-def split_similar_groups_by_variance(start_times: list[float]) -> list[list[float]]:
+def split_sections_by_variance(start_times: list[float]) -> list[list[float]]:
     """
     
     """
@@ -101,7 +101,7 @@ def split_similar_groups_by_variance(start_times: list[float]) -> list[list[floa
     return variance_split_groups_start_times
 
 
-def split_similar_groups_by_pauses(groups_df: pd.DataFrame, start_times: list[list[float]]) -> list[list[float]]:
+def split_sections_by_pauses(groups_df: pd.DataFrame, start_times: list[list[float]]) -> list[list[float]]:
     """
     
     """
@@ -116,7 +116,7 @@ def split_similar_groups_by_pauses(groups_df: pd.DataFrame, start_times: list[li
     return pause_split_groups_start_times
 
     
-def get_similar_groups_split_dfs(groups_df: pd.DataFrame, start_times: list[list[float]]):
+def get_sections_split_dfs(groups_df: pd.DataFrame, start_times: list[list[float]]):
     """
     
     """
@@ -130,30 +130,30 @@ def get_similar_groups_split_dfs(groups_df: pd.DataFrame, start_times: list[list
     return similar_split_group_dfs
 
 
-def split_similar_groups(groups_df: pd.DataFrame, similar_groups: dict[str: list[pd.DataFrame]]) -> dict[str: list[pd.DataFrame]]:
+def split_sections(groups_df: pd.DataFrame, sections: dict[str: list[pd.DataFrame]]) -> dict[str: list[pd.DataFrame]]:
     """
         Todo: instead of using start_times, create a list of the times between the groups and check the variance based on that.
     """
 
-    for key in similar_groups:
-        start_times = similar_groups[key][0]['start_time'].to_list()
+    for key in sections:
+        start_times = sections[key][0]['start_time'].to_list()
 
         if len(start_times) == 1: continue
 
-        split_groups_start_times = split_similar_groups_by_variance(start_times)
-        split_groups_start_times = split_similar_groups_by_pauses(groups_df, split_groups_start_times)
+        split_groups_start_times = split_sections_by_variance(start_times)
+        split_groups_start_times = split_sections_by_pauses(groups_df, split_groups_start_times)
         
-        similar_groups[key] = get_similar_groups_split_dfs(groups_df, split_groups_start_times)
+        sections[key] = get_sections_split_dfs(groups_df, split_groups_start_times)
 
-    return similar_groups
+    return sections
 
 
-def get_similar_groups_dfs_dict(groups_df: pd.DataFrame) -> dict[str: list[pd.DataFrame]]:
+def get_sections_dfs_dict(groups_df: pd.DataFrame) -> dict[str: list[pd.DataFrame]]:
     """
         Divides a groups_df into
     """
 
-    similar_groups = get_similar_groups_by_divisor_and_count_n(groups_df)
-    similar_groups = split_similar_groups(groups_df, similar_groups)
+    sections = get_sections_by_divisor_and_count_n(groups_df)
+    sections = split_sections(groups_df, sections)
 
-    return similar_groups
+    return sections

@@ -1,4 +1,6 @@
-def get_split_cluster_context_intervals(groups_df: pd.DataFrame, split_cluster: dict[str: list]):
+import pandas as pd
+
+def get_vertical_sections_intervals(groups_df: pd.DataFrame, split_cluster: dict[str: list]):
     context_interval = []
     group_indexes = []
     for group in split_cluster:
@@ -38,14 +40,14 @@ def get_split_cluster_context_intervals(groups_df: pd.DataFrame, split_cluster: 
 
 
 def merge_context_intervals_statistics(context_intervals_statistics: dict) -> dict:
-    for cluster in context_intervals_statistics:
-        operations = [sum, statistics.mean, statistics.mean, statistics.mean, statistics.mean, statistics.mean, statistics.mean, statistics.mean]
-        merged_statistic = [round(func(column), 2) for func, column in zip(operations, zip(*context_intervals_statistics[cluster]))]
-        context_intervals_statistics[cluster] = merged_statistic
+    # for cluster in context_intervals_statistics:
+    #     operations = [sum, statistics.mean, statistics.mean, statistics.mean, statistics.mean, statistics.mean, statistics.mean, statistics.mean]
+    #     merged_statistic = [round(func(column), 2) for func, column in zip(operations, zip(*context_intervals_statistics[cluster]))]
+    #     context_intervals_statistics[cluster] = merged_statistic
     return context_intervals_statistics
 
 
-def get_context_intervals_statistics(groups_df: pd.DataFrame, context_intervals: list) -> dict:
+def get_vertical_sections(groups_df: pd.DataFrame, context_intervals: list) -> dict:
     context_intervals_statistics = {}
 
     for interval in context_intervals:
