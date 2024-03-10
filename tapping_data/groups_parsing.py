@@ -73,6 +73,7 @@ def parse_groups(map_id, map_groups_file):
 
 	groups_df.between_divisor = (groups_df.beat_length / groups_df.time_between_objects).apply(lambda x: round_divisor(x))
 	groups_df.next_divisor = (groups_df.beat_length / groups_df.time_next_group).apply(lambda x: round_divisor(x))
+	groups_df.iloc[-1, groups_df.columns.get_loc('next_divisor')] = 0
 
 	groups_df = cast_types(groups_df)
 	groups_df.to_parquet(map_groups_file, index=False)

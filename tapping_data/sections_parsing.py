@@ -138,12 +138,12 @@ def split_sections(groups_df: pd.DataFrame, sections: dict[str: list[pd.DataFram
     for key in sections:
         start_times = sections[key][0]['start_time'].to_list()
 
-        if len(start_times) == 1: continue
-
-        split_groups_start_times = split_sections_by_variance(start_times)
-        split_groups_start_times = split_sections_by_pauses(groups_df, split_groups_start_times)
-        
-        sections[key] = get_sections_split_dfs(groups_df, split_groups_start_times)
+        if len(start_times) == 1:
+            sections[key] = [groups_df.loc[groups_df['start_time'].isin(start_times)]]
+        else:
+            split_groups_start_times = split_sections_by_variance(start_times)
+            split_groups_start_times = split_sections_by_pauses(groups_df, split_groups_start_times)
+            sections[key] = get_sections_split_dfs(groups_df, split_groups_start_times)
 
     return sections
 

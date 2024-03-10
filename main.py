@@ -11,24 +11,29 @@ def main(*map_ids, path=None):
 		print(map_id)
 		objects_df = get_objects_df(map_id, update_entry=True)
 		groups_df = get_groups_df(map_id, update_entry=True)
+		print(groups_df)
+		print()
 		# visualize_sections(groups_df)
 		sections_dfs_dict = get_sections_dfs_dict(groups_df)
-
-		sections_stats_dict = get_sections_stats_dict(sections_dfs_dict)
-		for section in sections_stats_dict:
-			print(section, sections_stats_dict[section])
-
+		for section in sections_dfs_dict:
+			print(section, sections_dfs_dict[section])
+			print()
 		print()
+
+		get_vertical_sections(groups_df)
+
+		# sections_stats_dict = get_sections_stats_dict(sections_dfs_dict)
+		# for section in sections_stats_dict:
+		# 	print(section, sections_stats_dict[section])
 
 
 if __name__ == '__main__':
 	try:
-		main(2983479, 3665005)
+		main(345099)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
 		print(non_std_gamemode)
-
 
 	# main(345099, 315354, 435350, 255694)  # natsu airman, sparkling daydream, choir jail, fantastic future
 	# main(918415, 898597, 1845874)  # feelin sky
