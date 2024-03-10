@@ -1,4 +1,5 @@
-from tapping_data.sections_statistics import get_sections_statistics
+from tapping_data.vertical_sections_parsing import get_vertical_sections
+from tapping_data.sections_statistics import get_sections_stats_dict
 from tapping_data.sections_parsing import get_sections_dfs_dict, visualize_sections
 from tapping_data.objects_parsing import get_objects_df
 from tapping_data.groups_parsing import get_groups_df
@@ -11,16 +12,18 @@ def main(*map_ids, path=None):
 		objects_df = get_objects_df(map_id, update_entry=True)
 		groups_df = get_groups_df(map_id, update_entry=True)
 		# visualize_sections(groups_df)
-		similar_groups = get_sections_dfs_dict(groups_df)
-		# for section in similar_groups:
-		# 	print(similar_groups[section])
-		get_sections_statistics(similar_groups)
+		sections_dfs_dict = get_sections_dfs_dict(groups_df)
+
+		sections_stats_dict = get_sections_stats_dict(sections_dfs_dict)
+		for section in sections_stats_dict:
+			print(section, sections_stats_dict[section])
+
 		print()
 
 
 if __name__ == '__main__':
 	try:
-		main(259)
+		main(2983479, 3665005)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:

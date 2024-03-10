@@ -19,32 +19,28 @@ def compute_statistics(data: list[float]) -> list[float]:
     return [round(summary.mean, 2), round(summary.variance**0.5, 2), summary.minmax[0], q1, q2, q3, summary.minmax[1]]
 
 
-def get_sections_statistics(similar_groups_dfs_dict: dict[str: list[pd.DataFrame]]) -> list[float]:
+def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], debug_mode=False) -> dict[str: float]:
     """
     
     """
-    
-    for key in similar_groups_dfs_dict:
-        if not (('16' in key or '8' in key) and '4.0' in key):
-           continue
-        print(key)
-        # print(similar_groups_dfs_dict[key])
 
+    sections_stats_dict = {}
+    
+    for key in sections_dfs_dict:
         section_group_counts_list = []
         n_time_between_sections_list = []
         group_object_counts_list = []
         n_time_between_groups_list = []
 
         prev_end_time = 0
-        for section_df in similar_groups_dfs_dict[key]:
-
-            # print(section_df)
-
+        for section_df in sections_dfs_dict[key]:
             first_group = section_df.iloc[0]
 
             section_group_counts_list.append(section_df.shape[0])
-            n_time_between_sections_list.append(round((first_group.start_time - prev_end_time) / first_group.beat_length, 2))
             group_object_counts_list += section_df.object_count.tolist()
+            
+            if len(sections_dfs_dict[key]) > 1:
+                n_time_between_sections_list.append(round((first_group.start_time - prev_end_time) / first_group.beat_length, 2))
 
             prev_end_time = first_group.start_time
             for _, row in section_df.iterrows():
@@ -52,15 +48,28 @@ def get_sections_statistics(similar_groups_dfs_dict: dict[str: list[pd.DataFrame
                 if n_time_between != 0:
                     n_time_between_groups_list.append(n_time_between)
                 prev_end_time = row.end_time
+                
+        section_group_count_stats = compute_statistics(section_group_counts_list)
+        n_time_between_sections_stats = compute_statistics(n_time_between_sections_list)
+        group_object_counts_stats = compute_statistics(group_object_counts_list)
+        n_time_between_groups_stats = compute_statistics(n_time_between_groups_list)
         
-        print()
-        print(f'{section_group_counts_list=}')
-        print(f'{n_time_between_sections_list=}')
-        print(f'{group_object_counts_list=}')
-        print(f'{n_time_between_groups_list=}')
-        print()
-        print(compute_statistics(section_group_counts_list))
-        print(compute_statistics(n_time_between_sections_list))
-        print(compute_statistics(group_object_counts_list))
-        print(compute_statistics(n_time_between_groups_list))
-        print()
+        if debug_mode:
+            print(key)
+            print()
+            print(f'{section_group_counts_list=}')
+            print(f'{n_time_between_sections_list=}')
+            print(f'{group_object_counts_list=}')
+            print(f'{n_time_between_groups_list=}')
+            print()
+            print(section_group_count_stats)
+            print(n_time_between_sections_stats)
+            print(group_object_counts_stats)
+            print(n_time_between_groups_stats)
+            print()
+
+        full_stats = section_group_count_stats + n_time_between_sections_stats + group_object_counts_stats + n_time_between_groups_stats
+        sections_stats_dict[key] = full_stats
+
+    return sections_stats_dict
+        
