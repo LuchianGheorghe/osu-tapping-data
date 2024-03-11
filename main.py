@@ -1,4 +1,4 @@
-from tapping_data.vertical_sections_parsing import get_vertical_sections
+from tapping_data.context_sections_parsing import get_all_context_sections_stats_dict
 from tapping_data.sections_statistics import get_sections_stats_dict
 from tapping_data.sections_parsing import get_sections_dfs_dict, visualize_sections
 from tapping_data.objects_parsing import get_objects_df
@@ -9,27 +9,21 @@ from beatmap_reader import BeatmapIO
 def main(*map_ids, path=None):
 	for map_id in map_ids:
 		print(map_id)
-		objects_df = get_objects_df(map_id, update_entry=True)
+
 		groups_df = get_groups_df(map_id, update_entry=True)
-		print(groups_df)
-		print()
-		# visualize_sections(groups_df)
-		sections_dfs_dict = get_sections_dfs_dict(groups_df)
-		for section in sections_dfs_dict:
-			print(section, sections_dfs_dict[section])
-			print()
-		print()
 
-		get_vertical_sections(groups_df)
+		all_context_sections_stats_dict = get_all_context_sections_stats_dict(groups_df)
+		for section in all_context_sections_stats_dict:
+			print(section)
+			for subsection in all_context_sections_stats_dict[section]:
+				print(f'\t{subsection}: {all_context_sections_stats_dict[section][subsection]}')
 
-		# sections_stats_dict = get_sections_stats_dict(sections_dfs_dict)
-		# for section in sections_stats_dict:
-		# 	print(section, sections_stats_dict[section])
+		visualize_sections(groups_df)
 
 
 if __name__ == '__main__':
 	try:
-		main(345099)
+		main(221777)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:

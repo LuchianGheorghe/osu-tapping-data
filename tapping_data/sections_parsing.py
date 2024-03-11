@@ -101,11 +101,14 @@ def split_sections_by_variance(start_times: list[float]) -> list[list[float]]:
     return variance_split_groups_start_times
 
 
-def split_sections_by_pauses(groups_df: pd.DataFrame, start_times: list[list[float]]) -> list[list[float]]:
+def split_sections_by_pauses(groups_df: pd.DataFrame, start_times: list[list[float]], all_groups_df: pd.DataFrame = None) -> list[list[float]]:
+    """
+        all_groups_df: used for the case of context_sections, which reconstruct groups_df to only contain the relevant groups. Otherwise this would split differently and give different values
     """
     
-    """
-    
+    if all_groups_df is not None:
+        groups_df = all_groups_df
+
     pause_points = groups_df[groups_df.next_divisor < 1]['start_time'].to_list()
 
     pause_split_groups_start_times = []
@@ -130,7 +133,7 @@ def get_sections_split_dfs(groups_df: pd.DataFrame, start_times: list[list[float
     return similar_split_group_dfs
 
 
-def split_sections(groups_df: pd.DataFrame, sections: dict[str: list[pd.DataFrame]]) -> dict[str: list[pd.DataFrame]]:
+def split_sections(groups_df: pd.DataFrame, sections: dict[str: list[pd.DataFrame]], all_groups_df: pd.DataFrame = None) -> dict[str: list[pd.DataFrame]]:
     """
         Todo: instead of using start_times, create a list of the times between the groups and check the variance based on that.
     """
@@ -142,18 +145,18 @@ def split_sections(groups_df: pd.DataFrame, sections: dict[str: list[pd.DataFram
             sections[key] = [groups_df.loc[groups_df['start_time'].isin(start_times)]]
         else:
             split_groups_start_times = split_sections_by_variance(start_times)
-            split_groups_start_times = split_sections_by_pauses(groups_df, split_groups_start_times)
+            split_groups_start_times = split_sections_by_pauses(groups_df, split_groups_start_times, all_groups_df)
             sections[key] = get_sections_split_dfs(groups_df, split_groups_start_times)
 
     return sections
 
 
-def get_sections_dfs_dict(groups_df: pd.DataFrame) -> dict[str: list[pd.DataFrame]]:
+def get_sections_dfs_dict(groups_df: pd.DataFrame, all_groups_df: pd.DataFrame = None) -> dict[str: list[pd.DataFrame]]:
     """
         Divides a groups_df into
     """
 
     sections = get_sections_by_divisor_and_count_n(groups_df)
-    sections = split_sections(groups_df, sections)
+    sections = split_sections(groups_df, sections, all_groups_df)
 
     return sections
