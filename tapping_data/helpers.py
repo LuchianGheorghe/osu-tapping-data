@@ -8,18 +8,34 @@ def print_t(input):
 
 def get_downloaded_maps_path():
     dirname = os.path.dirname(__file__)
-    maps_path = os.path.join(dirname, '..', 'beatmaps')
+    maps_path = os.path.join(dirname, '..', 'content', 'beatmaps')
     if not os.path.exists(maps_path):
-        os.mkdir(maps_path)
+        os.makedirs(maps_path)
     return maps_path
 
 
 def get_parsed_maps_path():
     dirname = os.path.dirname(__file__)
-    parsed_maps_path = os.path.join(dirname, '..', 'beatmaps_parsed')
+    parsed_maps_path = os.path.join(dirname, '..', 'content', 'beatmaps_parsed')
     if not os.path.exists(parsed_maps_path):
-        os.mkdir(parsed_maps_path)
+        os.makedirs(parsed_maps_path)
     return parsed_maps_path
+
+
+def get_lists_path():
+    dirname = os.path.dirname(__file__)
+    map_lists_path = os.path.join(dirname, '..', 'content', 'lists')
+    if not os.path.exists(map_lists_path):
+        os.makedirs(map_lists_path)
+    return map_lists_path
+
+
+def get_parsed_lists_path():
+    dirname = os.path.dirname(__file__)
+    parsed_map_lists_path = os.path.join(dirname, '..', 'content', 'lists_parsed')
+    if not os.path.exists(parsed_map_lists_path):
+        os.makedirs(parsed_map_lists_path)
+    return parsed_map_lists_path
 
 
 def create_empty_series(columns):
@@ -51,6 +67,6 @@ def validate_map_id(map_id):
     return int(map_id)
 
 
-def get_map_ids_from_file(path):
+def get_map_ids_from_file_path(path):
     with open(path) as file:
         return list(set([validate_map_id(map_id[:-1]) for map_id in file.readlines()]))

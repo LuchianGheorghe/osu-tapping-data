@@ -1,7 +1,5 @@
 .pytest_cache
 .venv
-beatmaps
-beatmaps_parsed
-groups_data
+content
 tests/__pycache__
 tapping_data/__pycache__

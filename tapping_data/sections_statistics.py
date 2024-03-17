@@ -9,14 +9,16 @@ def compute_statistics(data: list[float]) -> list[float]:
     
     if len(set(data)) <= 1:
         value = data[0] if data else 0
-        return [value, 0, value, value, value, value] 
+        return [value] #,0 , value, value, value, value] 
 
     summary = stats.describe(data)
     q1 = np.percentile(data, 25)
     q2 = np.percentile(data, 50)
     q3 = np.percentile(data, 75)
 
-    return [round(summary.mean, 2), round(summary.variance**0.5, 2), summary.minmax[0], q1, q2, q3, summary.minmax[1]]
+    # return [round(summary.mean, 2), round(summary.variance**0.5, 2), summary.minmax[0], q1, q2, q3, summary.minmax[1]]
+    # return [round(summary.mean, 2), round(summary.variance**0.5, 2)]
+    return [round(summary.mean, 2)]
 
 
 def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], debug_mode=False) -> dict[str: float]:
@@ -48,27 +50,27 @@ def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], de
                 if n_time_between != 0:
                     n_time_between_groups_list.append(n_time_between)
                 prev_end_time = row.end_time
-                
-        section_group_count_stats = compute_statistics(section_group_counts_list)
-        n_time_between_sections_stats = compute_statistics(n_time_between_sections_list)
-        group_object_counts_stats = compute_statistics(group_object_counts_list)
+
+        group_object_counts_stats = compute_statistics(group_object_counts_list)   
+        section_group_counts_stats = compute_statistics(section_group_counts_list)
         n_time_between_groups_stats = compute_statistics(n_time_between_groups_list)
+        n_time_between_sections_stats = compute_statistics(n_time_between_sections_list)
         
         if debug_mode:
             print(key)
             print()
-            print(f'{section_group_counts_list=}')
-            print(f'{n_time_between_sections_list=}')
             print(f'{group_object_counts_list=}')
+            print(f'{section_group_counts_list=}')
             print(f'{n_time_between_groups_list=}')
+            print(f'{n_time_between_sections_list=}')
             print()
-            print(section_group_count_stats)
-            print(n_time_between_sections_stats)
             print(group_object_counts_stats)
+            print(section_group_counts_stats)
             print(n_time_between_groups_stats)
+            print(n_time_between_sections_stats)
             print()
 
-        full_stats = section_group_count_stats + n_time_between_sections_stats + group_object_counts_stats + n_time_between_groups_stats
+        full_stats = group_object_counts_stats + section_group_counts_stats + n_time_between_groups_stats + n_time_between_sections_stats
         sections_stats_dict[key] = full_stats
 
     return sections_stats_dict
