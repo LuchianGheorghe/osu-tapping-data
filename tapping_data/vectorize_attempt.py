@@ -13,38 +13,53 @@ def cast_types(map_list_section_stats_df: pd.DataFrame) -> pd.DataFrame:
     """
 
     map_list_section_stats_df['map_id'] = map_list_section_stats_df['map_id'].astype('int32')
-    map_list_section_stats_df['group_object_counts'] = map_list_section_stats_df['group_object_counts'].astype('float32')
-    map_list_section_stats_df['section_group_counts'] = map_list_section_stats_df['section_group_counts'].astype('float32')
-    map_list_section_stats_df['n_time_between_groups'] = map_list_section_stats_df['n_time_between_groups'].astype('float32')
-    map_list_section_stats_df['n_time_between_sections'] = map_list_section_stats_df['n_time_between_sections'].astype('float32')
+    for count in [4, 8, 16]:
+        map_list_section_stats_df[f'group_object_counts_{count}'] = map_list_section_stats_df[f'group_object_counts_{count}'].astype('float32')
+        map_list_section_stats_df[f'section_group_counts_{count}'] = map_list_section_stats_df[f'section_group_counts_{count}'].astype('float32')
+        map_list_section_stats_df[f'n_time_between_groups_{count}'] = map_list_section_stats_df[f'n_time_between_groups_{count}'].astype('float32')
+        map_list_section_stats_df[f'n_time_between_sections_{count}'] = map_list_section_stats_df[f'n_time_between_sections_{count}'].astype('float32')
     return map_list_section_stats_df
 
 
-def parse_map_list_section_stats(map_list_file_path: str, section: str, map_list_section_stats_file: str) -> None:
+def parse_map_list_section_stats(map_list_file_path: str, target_section: str, map_list_section_stats_file: str) -> None:
     """
 
     """
-    
+
     map_ids = get_map_ids_from_file_path(map_list_file_path)
 
-    columns = ['map_id', 'group_object_counts', 'section_group_counts', 'n_time_between_groups', 'n_time_between_sections']
+    columns = ['map_id',
+               'group_object_counts_16', 'section_group_counts_16', 'n_time_between_groups_16', 'n_time_between_sections_16', 'total_section_count_16',
+               'group_object_counts_8', 'section_group_counts_8', 'n_time_between_groups_8', 'n_time_between_sections_8', 'total_section_count_8',
+               'group_object_counts_4', 'section_group_counts_4', 'n_time_between_groups_4', 'n_time_between_sections_4', 'total_section_count_4']
     map_list_section_stats_df = pd.DataFrame(columns=columns)
-
+    
     for map_id in map_ids:
         try:
             sections_stats_dict = get_sections_stats_dict(get_sections_dfs_dict(get_groups_df(map_id)))
         except ValueError as invalid_id:
-            print(invalid_id)           
+            print(invalid_id)
+        except Exception as e:
+            print(map_id, e)       
+
+        matching_sections = [existing_section for existing_section in sections_stats_dict if target_section in existing_section]
+        # print(f'{matching_sections=}')
+
+        new_row = create_empty_series(columns)
+        new_row.map_id = map_id
+
+        for section in matching_sections:
+            count = section.split('_')[-1]
+            new_row[f'group_object_counts_{count}'] = sections_stats_dict[section][0]
+            new_row[f'section_group_counts_{count}'] = sections_stats_dict[section][1]
+            new_row[f'n_time_between_groups_{count}'] = sections_stats_dict[section][2]
+            new_row[f'n_time_between_sections_{count}'] = sections_stats_dict[section][3]
+            new_row[f'total_section_count_{count}'] = sections_stats_dict[section][4]
+            # print(f'\t{map_id}: {section}: {sections_stats_dict[section]}')
         
-        if section in sections_stats_dict:
-            new_row = create_empty_series(columns)
-            new_row.map_id = map_id
-            new_row.group_object_counts = sections_stats_dict[section][0]
-            new_row.section_group_counts = sections_stats_dict[section][1]
-            new_row.n_time_between_groups = sections_stats_dict[section][2]
-            new_row.n_time_between_sections = sections_stats_dict[section][3]
-            map_list_section_stats_df = pd.concat([map_list_section_stats_df, new_row.to_frame().T], ignore_index=True)
-            # print(f'\t{map_id}: {sections_stats_dict[section]}')
+        new_row = new_row.fillna(0.0).infer_objects(copy=False)
+        map_list_section_stats_df = pd.concat([map_list_section_stats_df, new_row.to_frame().T], ignore_index=True)
+        # print(new_row)
 
     map_list_section_stats_df = cast_types(map_list_section_stats_df)
     map_list_section_stats_df.to_parquet(map_list_section_stats_file, index=False)

@@ -26,6 +26,8 @@ def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], de
     
     """
 
+    total_section_count = 0
+
     sections_stats_dict = {}
     
     for key in sections_dfs_dict:
@@ -50,7 +52,9 @@ def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], de
                 if n_time_between != 0:
                     n_time_between_groups_list.append(n_time_between)
                 prev_end_time = row.end_time
-
+            
+            total_section_count += 1
+        
         group_object_counts_stats = compute_statistics(group_object_counts_list)   
         section_group_counts_stats = compute_statistics(section_group_counts_list)
         n_time_between_groups_stats = compute_statistics(n_time_between_groups_list)
@@ -70,7 +74,7 @@ def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], de
             print(n_time_between_sections_stats)
             print()
 
-        full_stats = group_object_counts_stats + section_group_counts_stats + n_time_between_groups_stats + n_time_between_sections_stats
+        full_stats = group_object_counts_stats + section_group_counts_stats + n_time_between_groups_stats + n_time_between_sections_stats + [total_section_count]
         sections_stats_dict[key] = full_stats
 
     return sections_stats_dict

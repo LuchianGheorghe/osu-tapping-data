@@ -30,60 +30,91 @@ def context_sections(map_id):
 	visualize_sections(groups_df)
 
 
-def find_closest_map_ids(given_map_id, df, top_n=10):
-    # Ensure the map_id exists
-    if given_map_id not in df['map_id'].values:
-        return "Given map_id not found in the dataframe"
-    
-    # Exclude the map_id from the features
-    features_df = df.drop(['map_id'], axis=1)
-    
-    # Normalize the feature vectors (not always necessary for cosine similarity, but a good practice)
-    normalized_features = features_df - features_df.mean()
-    
-    # Find the index of the given map_id
-    given_index = df.index[df['map_id'] == given_map_id].tolist()[0]
-    
-    # Compute cosine similarity
-    similarities = cosine_similarity([normalized_features.iloc[given_index]], normalized_features)[0]
-    
-    # Get indices of the rows with highest similarity
-    # excluding the first one as it is the given map_id itself
-    closest_indices = np.argsort(-similarities)[1:top_n + 1]
-    
-    # Get the corresponding map_ids
-    closest_map_ids = df['map_id'].iloc[closest_indices].values
-    
-    return closest_map_ids
+def find_closest_map_ids_primary(given_map_id, df, top_n=25):
+	if given_map_id not in df['map_id'].values:
+		print("Target map_id not found in the dataframe")
+		return
+
+	features_df = df.drop(['map_id'], axis=1)
+	normalized_features = features_df - features_df.mean()
+	given_index = df.index[df['map_id'] == given_map_id].tolist()[0]
+
+	similarities = cosine_similarity([normalized_features.iloc[given_index]], normalized_features)[0]
+
+	closest_indices = np.argsort(-similarities)[:top_n + 1]
+	closest_map_ids = df['map_id'].iloc[closest_indices].values
+
+	return closest_map_ids
+
+
+def find_closest_map_ids_secondary(target_map_id, closest_map_ids_primary, df, top_n=10):
+	if target_map_id not in df['map_id'].values:
+		print("Target map_id not found in the dataframe")
+		return
+
+	df_closest_map_ids_primary = df.loc[df['map_id'].isin(closest_map_ids_primary)].reset_index()
+	
+	target_index = df_closest_map_ids_primary.index[df_closest_map_ids_primary['map_id'] == target_map_id].tolist()[0]
+	
+	features_df = df_closest_map_ids_primary.drop('map_id', axis=1)
+	normalized_features = features_df - features_df.mean()
+
+	similarities = cosine_similarity([normalized_features.iloc[target_index]], normalized_features)[0]
+
+	closest_indices = np.argsort(-similarities)[:top_n + 1]
+	closest_map_ids = df_closest_map_ids_primary['map_id'].iloc[closest_indices].values
+
+	return closest_map_ids
 
 
 def main(*map_ids, map_list_file=None):
 	if map_list_file:
-		section = 'divisor_4.0_count_16'
-		map_list_section_stats_df = get_map_list_section_stats_df(map_list_file, section)
-		map_ids = find_closest_map_ids(252238, map_list_section_stats_df, 10)
+		target_map_id = 345099
+		target_section_primary = 'divisor_2.0'
+		target_section_secondary = 'divisor_4.0'
+		
+		map_list_section_stats_df_primary = get_map_list_section_stats_df(map_list_file, target_section_primary, update_entry=False)
+		map_list_section_stats_df_secondary = get_map_list_section_stats_df(map_list_file, target_section_secondary, update_entry=False)
+		# print(map_list_section_stats_df)
+		
+		closest_map_ids_primary = find_closest_map_ids_primary(target_map_id, map_list_section_stats_df_primary, 25)
+		print(closest_map_ids_primary)
 
-		for map_id in map_ids:
+		closest_map_ids_secondary = find_closest_map_ids_secondary(target_map_id, closest_map_ids_primary, map_list_section_stats_df_secondary)
+		print(closest_map_ids_secondary)
+
+		for map_id in closest_map_ids_secondary:
 			groups_df = get_groups_df(map_id)
 			sections_stats_dict = get_sections_stats_dict(get_sections_dfs_dict(groups_df))
 			visualize_sections(groups_df)
-			print(map_id, sections_stats_dict[section])
-		plt.show()
-
-		for map_id in map_ids:
-			# webbrowser.open(f'https://osu.ppy.sh/b/{map_id}')
+			matching_sections = [existing_section for existing_section in sections_stats_dict if target_section_primary in existing_section or target_section_secondary in existing_section]
+			for section in matching_sections:
+				print(map_id, section, sections_stats_dict[section])
+			print()
+		
+		for map_id in closest_map_ids_secondary:
+			webbrowser.open(f'https://osu.ppy.sh/b/{map_id}')
 			time.sleep(0.2)
+
+		plt.show()
 
 	else:
 		for map_id in map_ids:
-			context_sections(map_id)
+			# context_sections(map_id)
+			for map_id in map_ids:
+				groups_df = get_groups_df(map_id)
+				sections_stats_dict = get_sections_stats_dict(get_sections_dfs_dict(groups_df))
+				visualize_sections(groups_df)
+				print(map_id)
+				for section in sections_stats_dict:
+					print(f'\t{section}: {sections_stats_dict[section]}')
 			plt.show()
 
 
 if __name__ == '__main__':
 	try:
-		main(map_list_file='tourney_maps_list_250.txt')
-		#main(252238)
+		main(map_list_file='tourney_maps_list.txt')
+		#main(2097288)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
