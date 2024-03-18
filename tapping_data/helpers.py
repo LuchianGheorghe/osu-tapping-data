@@ -38,8 +38,8 @@ def get_parsed_lists_path():
     return parsed_map_lists_path
 
 
-def create_empty_series(columns):
-    return pd.Series(data=[None]*len(columns), index=columns)
+def create_empty_series(columns, content=None):
+    return pd.Series(data=[content]*len(columns), index=columns)
 
 
 def round_divisor(value):

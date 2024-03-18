@@ -2,6 +2,5 @@
 .venv
 content/beatmaps
 content/beatmaps_parsed
-content/lists_parsed
 tests/__pycache__
 tapping_data/__pycache__

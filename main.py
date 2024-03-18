@@ -5,7 +5,7 @@ from tapping_data.objects_parsing import get_objects_df
 from tapping_data.groups_parsing import get_groups_df
 from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series
 
-from tapping_data.vectorize_attempt import get_map_list_section_stats_df
+from tapping_data.map_list_sections_stats_parsing import get_map_list_sections_stats_df
 
 from beatmap_reader import BeatmapIO
 import os
@@ -30,16 +30,26 @@ def context_sections(map_id):
 	visualize_sections(groups_df)
 
 
-def find_closest_map_ids_primary(given_map_id, df, top_n=25):
-	if given_map_id not in df['map_id'].values:
-		print("Target map_id not found in the dataframe")
+def search_by_cosine_similarity(df: pd.DataFrame, section_type: str, target_map_id: int, subset_map_ids: list[int] = None, top_n: int = 25) -> list[int]:
+	"""
+	
+	"""
+	
+	if target_map_id not in df['map_id'].values:
+		print("Target map id not found in the dataframe")
 		return
+	
+	df = df[df['section_type'] == section_type].reset_index()
 
-	features_df = df.drop(['map_id'], axis=1)
-	normalized_features = features_df - features_df.mean()
-	given_index = df.index[df['map_id'] == given_map_id].tolist()[0]
+	if subset_map_ids:
+		df = df[df['map_id'].isin(subset_map_ids)].reset_index()
+	
+	target_index = df.index[df['map_id'] == target_map_id].tolist()[0]
 
-	similarities = cosine_similarity([normalized_features.iloc[given_index]], normalized_features)[0]
+	n_features_df = df.drop(['map_id', 'section_type'], axis=1)
+	n_features_df = n_features_df - n_features_df.mean()
+
+	similarities = cosine_similarity([n_features_df.iloc[target_index]], n_features_df)[0]
 
 	closest_indices = np.argsort(-similarities)[:top_n + 1]
 	closest_map_ids = df['map_id'].iloc[closest_indices].values
@@ -47,54 +57,44 @@ def find_closest_map_ids_primary(given_map_id, df, top_n=25):
 	return closest_map_ids
 
 
-def find_closest_map_ids_secondary(target_map_id, closest_map_ids_primary, df, top_n=10):
-	if target_map_id not in df['map_id'].values:
-		print("Target map_id not found in the dataframe")
-		return
-
-	df_closest_map_ids_primary = df.loc[df['map_id'].isin(closest_map_ids_primary)].reset_index()
-	
-	target_index = df_closest_map_ids_primary.index[df_closest_map_ids_primary['map_id'] == target_map_id].tolist()[0]
-	
-	features_df = df_closest_map_ids_primary.drop('map_id', axis=1)
-	normalized_features = features_df - features_df.mean()
-
-	similarities = cosine_similarity([normalized_features.iloc[target_index]], normalized_features)[0]
-
-	closest_indices = np.argsort(-similarities)[:top_n + 1]
-	closest_map_ids = df_closest_map_ids_primary['map_id'].iloc[closest_indices].values
-
-	return closest_map_ids
-
-
 def main(*map_ids, map_list_file=None):
 	if map_list_file:
 		target_map_id = 345099
-		target_section_primary = 'divisor_2.0'
-		target_section_secondary = 'divisor_4.0'
-		
-		map_list_section_stats_df_primary = get_map_list_section_stats_df(map_list_file, target_section_primary, update_entry=False)
-		map_list_section_stats_df_secondary = get_map_list_section_stats_df(map_list_file, target_section_secondary, update_entry=False)
-		# print(map_list_section_stats_df)
-		
-		closest_map_ids_primary = find_closest_map_ids_primary(target_map_id, map_list_section_stats_df_primary, 25)
-		print(closest_map_ids_primary)
+		target_section_primary = 'divisor_4.0'
+		target_section_secondary = 'divisor_2.0'
 
-		closest_map_ids_secondary = find_closest_map_ids_secondary(target_map_id, closest_map_ids_primary, map_list_section_stats_df_secondary)
+		target_section_types = ['divisor_4.0', 'divisor_2.0']
+		
+		map_list_section_stats_df = get_map_list_sections_stats_df(map_list_file, target_section_types, update_entry=False)
+		# map_list_section_stats_df_secondary = get_map_list_sections_stats_df(map_list_file, target_section_secondary, update_entry=False)
+		# print(map_list_section_stats_df)
+		print(map_list_section_stats_df)
+
+		closest_map_ids_primary = search_by_cosine_similarity(map_list_section_stats_df, target_section_primary, target_map_id, top_n=100)
+		print(closest_map_ids_primary)
+		
+		closest_map_ids_secondary = search_by_cosine_similarity(map_list_section_stats_df, target_section_secondary, target_map_id, top_n=100)
 		print(closest_map_ids_secondary)
 
-		for map_id in closest_map_ids_secondary:
+		closest_map_ids_intersection = list(set(closest_map_ids_primary).intersection(set(closest_map_ids_secondary)))
+		closest_map_ids_intersection = closest_map_ids_intersection[:11] if len(closest_map_ids_primary) > 11 else closest_map_ids_intersection
+		print(closest_map_ids_intersection)
+
+		return
+		for map_id in closest_map_ids_intersection:
 			groups_df = get_groups_df(map_id)
 			sections_stats_dict = get_sections_stats_dict(get_sections_dfs_dict(groups_df))
-			visualize_sections(groups_df)
+			
 			matching_sections = [existing_section for existing_section in sections_stats_dict if target_section_primary in existing_section or target_section_secondary in existing_section]
 			for section in matching_sections:
 				print(map_id, section, sections_stats_dict[section])
 			print()
+			
+			visualize_sections(groups_df)
 		
-		for map_id in closest_map_ids_secondary:
-			webbrowser.open(f'https://osu.ppy.sh/b/{map_id}')
-			time.sleep(0.2)
+		for map_id in closest_map_ids_intersection:
+			# webbrowser.open(f'https://osu.ppy.sh/b/{map_id}')
+			time.sleep(0.5)
 
 		plt.show()
 
@@ -104,10 +104,13 @@ def main(*map_ids, map_list_file=None):
 			for map_id in map_ids:
 				groups_df = get_groups_df(map_id)
 				sections_stats_dict = get_sections_stats_dict(get_sections_dfs_dict(groups_df))
-				visualize_sections(groups_df)
+
 				print(map_id)
 				for section in sections_stats_dict:
 					print(f'\t{section}: {sections_stats_dict[section]}')
+				print()
+
+				visualize_sections(groups_df)
 			plt.show()
 
 
