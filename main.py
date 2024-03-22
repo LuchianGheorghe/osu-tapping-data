@@ -96,7 +96,7 @@ def main(*map_ids, map_list_file=None):
 		target_map_id = 345099
 
 		target_section_p = 'divisor_4.0'
-		target_subsection_p = [16, 8]
+		target_subsection_p = [4, 8, 16]
 
 		target_section_s = 'divisor_2.0'
 		target_subsection_s = [4, 8, 16]

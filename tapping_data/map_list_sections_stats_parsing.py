@@ -7,19 +7,19 @@ import os
 import pandas as pd
 
 
-def cast_types(map_list_section_stats_df: pd.DataFrame) -> pd.DataFrame:
+def cast_types(map_list_sections_stats_df: pd.DataFrame) -> pd.DataFrame:
     """
         
     """
 
-    map_list_section_stats_df['map_id'] = map_list_section_stats_df['map_id'].astype('int32')
-    map_list_section_stats_df['section_type'] = map_list_section_stats_df['section_type'].astype('string')
+    map_list_sections_stats_df['map_id'] = map_list_sections_stats_df['map_id'].astype('int32')
+    map_list_sections_stats_df['section_type'] = map_list_sections_stats_df['section_type'].astype('string')
     for count in [4, 8, 16]:
-        map_list_section_stats_df[f'group_object_counts_{count}'] = map_list_section_stats_df[f'group_object_counts_{count}'].astype('float32')
-        map_list_section_stats_df[f'section_group_counts_{count}'] = map_list_section_stats_df[f'section_group_counts_{count}'].astype('float32')
-        map_list_section_stats_df[f'n_time_between_groups_{count}'] = map_list_section_stats_df[f'n_time_between_groups_{count}'].astype('float32')
-        map_list_section_stats_df[f'n_time_between_sections_{count}'] = map_list_section_stats_df[f'n_time_between_sections_{count}'].astype('float32')
-    return map_list_section_stats_df
+        map_list_sections_stats_df[f'group_object_counts_{count}'] = map_list_sections_stats_df[f'group_object_counts_{count}'].astype('float32')
+        map_list_sections_stats_df[f'section_group_counts_{count}'] = map_list_sections_stats_df[f'section_group_counts_{count}'].astype('float32')
+        map_list_sections_stats_df[f'n_time_between_groups_{count}'] = map_list_sections_stats_df[f'n_time_between_groups_{count}'].astype('float32')
+        map_list_sections_stats_df[f'n_time_between_sections_{count}'] = map_list_sections_stats_df[f'n_time_between_sections_{count}'].astype('float32')
+    return map_list_sections_stats_df
 
 
 def parse_map_list_sections_stats(map_list_file_path: str, target_section_types: list[str], map_list_section_stats_file: str) -> None:
