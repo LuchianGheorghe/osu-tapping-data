@@ -38,6 +38,14 @@ def get_parsed_lists_path():
     return parsed_map_lists_path
 
 
+def get_models_path():
+    dirname = os.path.dirname(__file__)
+    models_path = os.path.join(dirname, '..', 'content', 'models')
+    if not os.path.exists(models_path):
+        os.makedirs(models_path)
+    return models_path
+
+
 def create_empty_series(columns, content=None):
     return pd.Series(data=[content]*len(columns), index=columns)
 

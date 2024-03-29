@@ -44,7 +44,26 @@ def get_context_intervals(groups_df: pd.DataFrame, sections_dfs_dict: dict[str: 
     return context_intervals
 
 
-def get_all_context_sections_stats_dict(groups_df: pd.DataFrame) -> dict:
+def get_all_context_sections_stats_dict(groups_df: pd.DataFrame) -> dict[str: dict[str: list[float]]]:
+    """
+        Returns : dict[str: dict[str: list[float]]]
+            Dictionary with each section as they key, and as the value another dictionary with every (subsection, [statistics]) pair
+
+        divisor_6.0_count_4
+                divisor_6.0_count_4: [0, 327.35, 2, 1, 2]
+                divisor_2.0_count_4: [0, 0, 4, 1, 3]
+                divisor_1.5_count_4: [0, 325.76, 3.0, 1, 5]
+                divisor_1.0_count_4: [0, 0, 3, 1, 6]
+        divisor_4.0_count_16
+                divisor_4.0_count_16: [0, 176.01, 12.5, 1, 4]
+                divisor_2.0_count_16: [0, 0, 24, 1, 5]
+                divisor_2.0_count_8: [0, 354.26, 5.5, 1, 7]
+                divisor_2.0_count_4: [4.0, 299.76, 2, 1.5, 9]
+        divisor_4.0_count_8
+                divisor_4.0_count_8: [0, 0, 5, 1, 1]
+                divisor_4.0_count_4: [0, 0, 3, 1, 2]
+    """
+    
     all_context_sections_stats_dict = {}
 
     sections_dfs_dict = get_sections_dfs_dict(groups_df)

@@ -126,7 +126,9 @@ def split_sections_by_variance(start_times: list[float]) -> list[list[float]]:
 
 def split_sections_by_pauses(groups_df: pd.DataFrame, start_times: list[list[float]], all_groups_df: pd.DataFrame = None) -> list[list[float]]:
     """
-        all_groups_df: used for the case of context_sections, which reconstruct groups_df to only contain the relevant groups. Otherwise this would split differently and give different values
+        all_groups_df: Used only for the case of context_sections, which reconstruct groups_df to only contain the relevant groups. 
+                With this it splits by breaks in the same way as it does for the entire level.
+                It's not needed otherwise.
     """
     
     if all_groups_df is not None:
@@ -177,6 +179,10 @@ def split_sections(groups_df: pd.DataFrame, sections: dict[str: list[pd.DataFram
 def get_sections_dfs_dict(groups_df: pd.DataFrame, all_groups_df: pd.DataFrame = None) -> dict[str: list[pd.DataFrame]]:
     """
         Divides a groups_df into
+
+        all_groups_df: Used only for the case of context_sections, which reconstruct groups_df to only contain the relevant groups. 
+                        With this it splits by breaks in the same way as it does for the entire level.
+                        It's not needed otherwise.
     """
 
     sections = get_sections_by_divisor_and_count_n(groups_df)
