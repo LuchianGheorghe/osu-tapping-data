@@ -1,5 +1,5 @@
 import pandas as pd
-from tapping_data.sections_parsing import get_sections_dfs_dict
+from tapping_data.sections_parsing import get_sections_dfs_dict, split_sections
 from tapping_data.sections_statistics import get_sections_stats_dict
 
 
@@ -42,6 +42,49 @@ def get_context_intervals(groups_df: pd.DataFrame, sections_dfs_dict: dict[str: 
         context_intervals.append(vertical_section_interval)
 
     return context_intervals
+
+
+def get_split_context_sections_dfs(groups_df: pd.DataFrame, sections_dfs_dict: dict[str: list[pd.DataFrame]], section: str) -> list[pd.DataFrame]:
+    """
+    
+    """
+
+    if section not in sections_dfs_dict:
+        raise Exception("Target section does not exist in map.")
+
+    context_intervals = get_context_intervals(groups_df, sections_dfs_dict, section)
+
+    # get all the indices corresponding to the vertical_sections_intervals
+    context_indices = []
+    for interval in context_intervals:
+        start_idx = interval[0]
+        end_index = interval[1] if len(interval) != 1 else interval[0]
+        context_indices += list(range(start_idx, end_index + 1))
+
+    # get the dataframe associated with the indices
+    context_df = groups_df.loc[groups_df.index.isin(context_indices)].copy()
+
+    # normally split_sections is applied to individual sections
+    # here we construct a similar structure to reuse the function
+    # sections={section: [context_df]}
+    split_context_dfs = split_sections(groups_df=context_df, sections={section: [context_df]}, all_groups_df=groups_df)[section]
+
+    return split_context_dfs
+
+
+def get_all_split_context_sections_dfs(groups_df: pd.DataFrame) -> None:
+    """
+    
+    """
+    
+    all_context_sections_dfs = {}
+
+    sections_dfs_dict = get_sections_dfs_dict(groups_df)
+    for section in sections_dfs_dict:
+        context_sections_df = get_split_context_sections_dfs(groups_df, sections_dfs_dict, section)
+        all_context_sections_dfs[section] = context_sections_df
+
+    return all_context_sections_dfs
 
 
 def get_all_context_sections_stats_dict(groups_df: pd.DataFrame) -> dict[str: dict[str: list[float]]]:
