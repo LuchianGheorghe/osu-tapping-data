@@ -14,10 +14,13 @@ def cast_types(map_list_sections_stats_df: pd.DataFrame) -> pd.DataFrame:
 
     map_list_sections_stats_df['map_id'] = map_list_sections_stats_df['map_id'].astype('int32')
     map_list_sections_stats_df['section'] = map_list_sections_stats_df['section'].astype('string')
-    map_list_sections_stats_df[f'group_object_counts'] = map_list_sections_stats_df[f'group_object_counts'].astype('float32')
-    map_list_sections_stats_df[f'section_group_counts'] = map_list_sections_stats_df[f'section_group_counts'].astype('float32')
+    map_list_sections_stats_df[f'total_section_count'] = map_list_sections_stats_df[f'total_section_count'].astype('float32')
     map_list_sections_stats_df[f'n_time_between_groups'] = map_list_sections_stats_df[f'n_time_between_groups'].astype('float32')
     map_list_sections_stats_df[f'n_time_between_sections'] = map_list_sections_stats_df[f'n_time_between_sections'].astype('float32')
+    map_list_sections_stats_df[f'group_object_counts'] = map_list_sections_stats_df[f'group_object_counts'].astype('float32')
+    map_list_sections_stats_df[f'section_group_counts'] = map_list_sections_stats_df[f'section_group_counts'].astype('float32')
+    map_list_sections_stats_df[f'section_all_group_counts'] = map_list_sections_stats_df[f'section_all_group_counts'].astype('float32')
+    
     return map_list_sections_stats_df
 
 
@@ -28,7 +31,7 @@ def parse_map_list_sections_stats(target_section: str, map_ids: list[str] = [], 
     if map_list_file_path is not None:
         map_ids += get_map_ids_from_file_path(map_list_file_path)
 
-    columns = ['map_id', 'section', 'n_time_between_groups', 'n_time_between_sections', 'group_object_counts', 'section_group_counts', 'total_section_count']
+    columns = ['map_id', 'section', 'total_section_count', 'n_time_between_groups', 'n_time_between_sections', 'group_object_counts', 'section_group_counts', 'section_all_group_counts']
     map_list_section_stats_df = pd.DataFrame(columns=columns)
     
     for map_id in map_ids:
@@ -46,11 +49,13 @@ def parse_map_list_sections_stats(target_section: str, map_ids: list[str] = [], 
         new_row.map_id = map_id
         new_row.section = target_section
 
-        new_row[f'group_object_counts'] = sections_stats_dict[target_section][0]
-        new_row[f'section_group_counts'] = sections_stats_dict[target_section][1]
-        new_row[f'n_time_between_groups'] = sections_stats_dict[target_section][2]
-        new_row[f'n_time_between_sections'] = sections_stats_dict[target_section][3]
-        new_row[f'total_section_count'] = sections_stats_dict[target_section][4]
+        new_row[f'total_section_count'] = sections_stats_dict[target_section][0]
+        new_row[f'n_time_between_groups'] = sections_stats_dict[target_section][1]
+        new_row[f'n_time_between_sections'] = sections_stats_dict[target_section][2]
+        new_row[f'group_object_counts'] = sections_stats_dict[target_section][3]
+        new_row[f'section_group_counts'] = sections_stats_dict[target_section][4]
+        new_row[f'section_all_group_counts'] = sections_stats_dict[target_section][5]
+        
         # print(f'\t{map_id}: {section}: {sections_stats_dict[section]}')
 
         new_row = new_row.fillna(0)

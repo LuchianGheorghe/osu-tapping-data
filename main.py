@@ -32,13 +32,18 @@ def main(*map_ids, map_list_file=None):
 	else:
 		for map_id in map_ids:
 			groups_df = get_groups_df(map_id)
-			print(map_id_to_document_context_sections(map_id, section='divisor_4.0_count_16'))
+			sections_dfs_dict = get_sections_dfs_dict(groups_df)
+			sections_stats_dict = get_sections_stats_dict(sections_dfs_dict)
+			print(sections_stats_dict)
+			for s in sections_stats_dict:
+				print(f'\t{s}: {sections_stats_dict[s]}')
+				print()
 
 
 if __name__ == '__main__':
 	try:
 		main(map_list_file='tourney_maps_list.txt')
-		# main(772293)
+		#main(772293)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:

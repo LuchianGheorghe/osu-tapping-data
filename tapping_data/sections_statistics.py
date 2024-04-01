@@ -26,15 +26,23 @@ def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], de
     
     """
 
-    total_section_count = 0
-
     sections_stats_dict = {}
-    
+
     for key in sections_dfs_dict:
-        section_group_counts_list = []
-        n_time_between_sections_list = []
-        group_object_counts_list = []
+        # how many sections of type ``key``
+        section_count = 0
+
+        # list containing how many metronome measures pass between groups
         n_time_between_groups_list = []
+        # list containing how many metronome measures pass between sections
+        n_time_between_sections_list = []
+
+        # list of the length of each group in terms of object counts
+        group_object_counts_list = []
+        # list of the length of each section in terms of group count
+        section_group_counts_list = []
+        # list of the group count in each section (last row index - first row index, not counting only the ``key`` sections)
+        section_all_group_counts_list = []
 
         prev_end_time = 0
         for section_df in sections_dfs_dict[key]:
@@ -44,7 +52,13 @@ def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], de
             group_object_counts_list += section_df.object_count.tolist()
             
             if len(sections_dfs_dict[key]) > 1:
+                all_groups_count = section_df.iloc[-1].name - first_group.name
+                section_all_group_counts_list.append(all_groups_count)
+
                 n_time_between_sections_list.append(round((first_group.start_time - prev_end_time) / first_group.beat_length, 2))
+            
+            elif len(sections_dfs_dict[key]) == 1:
+                section_all_group_counts_list.append(1)
 
             prev_end_time = first_group.start_time
             for _, row in section_df.iterrows():
@@ -53,12 +67,13 @@ def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], de
                     n_time_between_groups_list.append(n_time_between)
                 prev_end_time = row.end_time
             
-            total_section_count += 1
+            section_count += 1
         
         n_time_between_groups_stats = compute_statistics(n_time_between_groups_list)
         n_time_between_sections_stats = compute_statistics(n_time_between_sections_list)
         group_object_counts_stats = compute_statistics(group_object_counts_list)   
         section_group_counts_stats = compute_statistics(section_group_counts_list)
+        section_all_group_counts_stats = compute_statistics(section_all_group_counts_list)
         
         if debug_mode:
             print(key)
@@ -67,15 +82,17 @@ def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], de
             print(f'{n_time_between_sections_list=}')
             print(f'{group_object_counts_list=}')
             print(f'{section_group_counts_list=}')
+            print(f'{section_all_group_counts_list=}')
             print()
+            print(section_count)
             print(n_time_between_groups_stats)
             print(n_time_between_sections_stats)
             print(group_object_counts_stats)
             print(section_group_counts_stats)
-            print(total_section_count)
+            print(section_all_group_counts_stats)
             print()
 
-        full_stats = n_time_between_groups_stats + n_time_between_sections_stats + group_object_counts_stats + section_group_counts_stats + [total_section_count]
+        full_stats = [section_count] + n_time_between_groups_stats + n_time_between_sections_stats + group_object_counts_stats + section_group_counts_stats + section_all_group_counts_stats
         sections_stats_dict[key] = full_stats
 
     return sections_stats_dict
