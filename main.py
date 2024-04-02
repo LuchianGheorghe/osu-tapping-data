@@ -28,7 +28,12 @@ def main(*map_ids, map_list_file=None):
 	if map_list_file:
 		# create_model(map_list_file, map_id_to_document=map_id_to_document_context_sections, section='divisor_4.0_count_16')
 		# get_similar_maps_doc2vec(435350, map_list_file, section='divisor_4.0_count_16', map_id_to_document=map_id_to_document_context_sections, top_n=10)
-		get_similar_maps(map_list_file)
+
+		target_map_id = 3970329
+		target_section= 'divisor_4.0_count_16'
+
+		get_similar_maps(target_map_id, target_section, map_list_file, visualize=True, open_links=False)
+
 	else:
 		for map_id in map_ids:
 			groups_df = get_groups_df(map_id)
@@ -60,6 +65,7 @@ if __name__ == '__main__':
 	# main(351752, 429989)  # view of river styx RLC vs GoldenWolf
 	# main(221777, 260489)  # pretender vs near distant future
 	# main(129891, 658127)  # freedom dive vs blue zenith
+	# main(550235) # united
 	# main(1764213) # harumachi clover sotarks
 	# main(221777) # pretender
 	# main(260489) # near distant future

@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import webbrowser
 import time
 
-from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from sklearn.preprocessing import MinMaxScaler
 
-def search_by_cosine_similarity(target_section: str, target_map_id: int, df: pd.DataFrame, top_n: int = 10, target_columns: list[str] = []) -> pd.DataFrame:
+def search_by_cosine_similarity(target_section: str, target_map_id: int, df: pd.DataFrame, top_n: int = 10, target_columns: list[str] = []) -> tuple[pd.DataFrame, list[int]]:
 	"""
 	Returns the most similar maps by cosine similarity to 'target_map_id'.
 
@@ -63,49 +63,54 @@ def search_by_cosine_similarity(target_section: str, target_map_id: int, df: pd.
 	closest_indices = np.argsort(-similarities)[:top_n + 1]
 	closest_map_ids = df['map_id'].iloc[closest_indices].values
 
-	return df.iloc[closest_indices]
+	return df.iloc[closest_indices], closest_map_ids
 
 
-def get_similar_maps(map_list_file: str = None):
-	if map_list_file:
-		target_map_id = 345099
-		target_section= 'divisor_4.0_count_16'
+def get_similar_maps(target_map_id: int, target_section: str, map_list_file: str, visualize: bool = False, open_links: bool = False) -> None:
+	"""
+	
+	"""
 
-		columns = ['map_id', 'section', 'total_section_count', 
-			'n_time_between_groups', 'n_time_between_sections', 
-			'group_object_counts', 'section_group_counts', 'section_all_group_counts']
-		target_columns = ['n_time_between_groups', 'section_group_counts', 'section_all_group_counts']
+	target_map_id = 161787
+	target_section= 'divisor_4.0_count_16'
+	visualize = False
+	open_links = False
 
-		map_list_df = get_map_list_sections_stats_df(target_section, map_list_file=map_list_file, update_entry=False)
+	original_columns = ['map_id', 'section', 'total_section_count', 'n_time_between_groups', 'n_time_between_sections', 'group_object_counts', 'section_group_counts', 'section_all_group_counts']
+	target_columns = ['total_section_count', 'n_time_between_groups', 'section_group_counts', 'section_all_group_counts']
 
-		if target_map_id not in map_list_df.map_id.values:
-			new_rows = parse_map_list_sections_stats(target_section, map_ids=[target_map_id])
-			map_list_df = pd.concat([map_list_df, new_rows], ignore_index=True)
-		
+	map_list_df = get_map_list_sections_stats_df(target_section, map_list_file=map_list_file, update_entry=False)
 
-		closest_maps_df = search_by_cosine_similarity(target_section, target_map_id, map_list_df, top_n=50, target_columns=target_columns)
-		print(closest_maps_df.sort_values('n_time_between_sections', ascending=False))
+	if target_map_id not in map_list_df.map_id.values:
+		new_rows = parse_map_list_sections_stats(target_section, map_ids=[target_map_id])
+		map_list_df = pd.concat([map_list_df, new_rows], ignore_index=True)
 
-		closest_maps_df['diff'] = (closest_maps_df['n_time_between_sections'] - 52.330002).abs()
+	closest_maps_df, closest_map_ids = search_by_cosine_similarity(target_section, target_map_id, map_list_df, top_n=25, target_columns=target_columns)
 
-		
-		closest_map_ids = closest_maps_df.sort_values(by='diff').drop('diff', axis=1).index.values
+	#closest_map_ids_s = search_by_cosine_similarity(target_map_id, target_section_s, target_subsection_s, map_list_df, closest_map_ids_p, top_n=10)
+	#print(closest_map_ids_s)
 
-		#closest_map_ids_s = search_by_cosine_similarity(target_map_id, target_section_s, target_subsection_s, map_list_df, closest_map_ids_p, top_n=10)
-		#print(closest_map_ids_s)
+	#closest_map_ids_intersection = list(set(closest_map_ids_p).intersection(set(closest_map_ids_s)))
+	#closest_map_ids_intersection = closest_map_ids_intersection[:11] if len(closest_map_ids_p) > 11 else closest_map_ids_intersection
+	#print(closest_map_ids_intersection)
 
-		#closest_map_ids_intersection = list(set(closest_map_ids_p).intersection(set(closest_map_ids_s)))
-		#closest_map_ids_intersection = closest_map_ids_intersection[:11] if len(closest_map_ids_p) > 11 else closest_map_ids_intersection
-		#print(closest_map_ids_intersection)
+	for col in ['map_id', 'section'] + target_columns:
+		original_columns.remove(col)
+	columns_reordered = ['map_id', 'section'] + target_columns + original_columns
 
+	#closest_maps_df['diff'] = (closest_maps_df['group_object_counts'] - closest_maps_df.iloc[0]['group_object_counts']).abs()
+	#closest_maps_df.sort_values(by='diff').drop('diff', axis=1)
+
+	print(closest_maps_df[columns_reordered].to_string(index=False))
+
+	if visualize:
 		for map_id in closest_map_ids:
 			groups_df = get_groups_df(map_id)
-			sections_stats_dict = get_sections_stats_dict(get_sections_dfs_dict(groups_df))
-			print(map_id, target_section, sections_stats_dict[target_section])
-			# visualize_sections(groups_df)
-		
+			visualize_sections(groups_df)
+	
+	if open_links:
 		for map_id in closest_map_ids:
-			# webbrowser.open(f'https://osu.ppy.sh/b/{map_id}')
+			webbrowser.open(f'https://osu.ppy.sh/b/{map_id}')
 			time.sleep(0.5)
 
-		plt.show()
+	plt.show()
