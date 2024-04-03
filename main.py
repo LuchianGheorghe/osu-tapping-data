@@ -6,7 +6,7 @@ from tapping_data.groups_parsing import get_groups_df
 from tapping_data.groups_doc2vec import create_model, get_similar_maps_doc2vec, map_id_to_document_context_sections
 from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series
 from tapping_data.map_list_sections_stats_parsing import get_map_list_sections_stats_df
-from tapping_data.map_list_sections_stats_similarity import get_similar_maps
+from tapping_data.map_list_sections_stats_similarity import get_similar_maps, target_section_clustering, visualize_multiple_map_section
 
 from beatmap_reader import BeatmapIO
 import matplotlib.pyplot as plt
@@ -31,8 +31,9 @@ def main(*map_ids, map_list_file=None):
 
 		target_map_id = 3970329
 		target_section= 'divisor_4.0_count_16'
-
-		get_similar_maps(target_map_id, target_section, map_list_file, visualize=True, open_links=False)
+		visualize_multiple_map_section()
+		# target_section_clustering(target_section, map_list_file)
+		# get_similar_maps(target_map_id, target_section, map_list_file, visualize=True, open_links=False)
 
 	else:
 		for map_id in map_ids:

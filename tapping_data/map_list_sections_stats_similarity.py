@@ -15,6 +15,9 @@ import time
 from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from sklearn.preprocessing import MinMaxScaler
 
+from sklearn.cluster import KMeans
+
+
 def search_by_cosine_similarity(target_section: str, target_map_id: int, df: pd.DataFrame, top_n: int = 10, target_columns: list[str] = []) -> tuple[pd.DataFrame, list[int]]:
 	"""
 	Returns the most similar maps by cosine similarity to 'target_map_id'.
@@ -87,13 +90,6 @@ def get_similar_maps(target_map_id: int, target_section: str, map_list_file: str
 
 	closest_maps_df, closest_map_ids = search_by_cosine_similarity(target_section, target_map_id, map_list_df, top_n=25, target_columns=target_columns)
 
-	#closest_map_ids_s = search_by_cosine_similarity(target_map_id, target_section_s, target_subsection_s, map_list_df, closest_map_ids_p, top_n=10)
-	#print(closest_map_ids_s)
-
-	#closest_map_ids_intersection = list(set(closest_map_ids_p).intersection(set(closest_map_ids_s)))
-	#closest_map_ids_intersection = closest_map_ids_intersection[:11] if len(closest_map_ids_p) > 11 else closest_map_ids_intersection
-	#print(closest_map_ids_intersection)
-
 	for col in ['map_id', 'section'] + target_columns:
 		original_columns.remove(col)
 	columns_reordered = ['map_id', 'section'] + target_columns + original_columns
@@ -114,3 +110,49 @@ def get_similar_maps(target_map_id: int, target_section: str, map_list_file: str
 			time.sleep(0.5)
 
 	plt.show()
+
+
+def visualize_multiple_map_section():
+	target_map_id = 3970329
+	target_section= 'divisor_4.0_count_16'
+
+	groups_df = get_groups_df(target_map_id)
+	groups_df['section'] = groups_df['object_count_n'] + groups_df['between_divisor']
+	print(groups_df)
+
+
+def target_section_clustering(target_section: str, map_list_file: str) -> None:
+	"""
+	
+	"""
+
+	map_list_df = get_map_list_sections_stats_df(target_section, map_list_file=map_list_file, update_entry=False)
+	n_features_df = map_list_df.drop(['map_id', 'section'], axis=1)
+
+	# inertias = []
+	# for i in range(1,11):
+	# 	kmeans = KMeans(n_clusters=i)
+	# 	kmeans.fit(n_features_df[['total_section_count', 'n_time_between_groups', 'section_group_counts', 'section_all_group_counts']])
+	# 	inertias.append(kmeans.inertia_)
+
+	# plt.plot(range(1,11), inertias, marker='o')
+	# plt.title('Elbow method')
+	# plt.xlabel('Number of clusters')
+	# plt.ylabel('Inertia')
+	# plt.show()
+
+	kmeans = KMeans(n_clusters=4)
+	kmeans.fit(n_features_df[['total_section_count', 'n_time_between_groups', 'section_group_counts', 'section_all_group_counts']])
+	cluster_labels = kmeans.labels_
+
+	map_list_df['cluster'] = cluster_labels
+
+	for i in range(4):
+		map_ids = map_list_df[map_list_df['cluster'] == i].iloc[:4]['map_id'].values
+		print(i, map_ids)
+		for map_id in map_ids:
+			groups_df = get_groups_df(map_id)
+			visualize_sections(groups_df)
+		plt.show()
+
+
