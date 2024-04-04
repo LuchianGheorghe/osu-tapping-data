@@ -74,9 +74,10 @@ def get_similar_maps(target_map_id: int, target_section: str, map_list_file: str
 	
 	"""
 
-	target_map_id = 161787
+	#target_map_id = 161787
+	target_map_id = 255694
 	target_section= 'divisor_4.0_count_16'
-	visualize = False
+	visualize = True
 	open_links = False
 
 	original_columns = ['map_id', 'section', 'total_section_count', 'n_time_between_groups', 'n_time_between_sections', 'group_object_counts', 'section_group_counts', 'section_all_group_counts']
@@ -88,7 +89,7 @@ def get_similar_maps(target_map_id: int, target_section: str, map_list_file: str
 		new_rows = parse_map_list_sections_stats(target_section, map_ids=[target_map_id])
 		map_list_df = pd.concat([map_list_df, new_rows], ignore_index=True)
 
-	closest_maps_df, closest_map_ids = search_by_cosine_similarity(target_section, target_map_id, map_list_df, top_n=25, target_columns=target_columns)
+	closest_maps_df, closest_map_ids = search_by_cosine_similarity(target_section, target_map_id, map_list_df, top_n=5, target_columns=target_columns)
 
 	for col in ['map_id', 'section'] + target_columns:
 		original_columns.remove(col)

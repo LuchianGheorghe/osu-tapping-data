@@ -31,9 +31,9 @@ def main(*map_ids, map_list_file=None):
 
 		target_map_id = 3970329
 		target_section= 'divisor_4.0_count_16'
-		visualize_multiple_map_section()
+		# visualize_multiple_map_section()
 		# target_section_clustering(target_section, map_list_file)
-		# get_similar_maps(target_map_id, target_section, map_list_file, visualize=True, open_links=False)
+		get_similar_maps(target_map_id, target_section, map_list_file, visualize=True, open_links=False)
 
 	else:
 		for map_id in map_ids:
