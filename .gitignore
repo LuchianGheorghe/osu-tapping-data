@@ -4,4 +4,4 @@ content/beatmaps
 content/beatmaps_parsed
 tests/__pycache__
 tapping_data/__pycache__
-pyenv.cfg
+pyvenv.cfg
