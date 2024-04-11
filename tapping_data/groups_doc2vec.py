@@ -21,16 +21,11 @@ def columns_to_word(row: pd.Series) -> str:
     
     """
 
-    if row['object_count_n'] == 16 and row['between_divisor'] == 4.0:
-        return f"count_{str(row['object_count_n'])}_div_{str(row['between_divisor'])}_nextdiv_{str(row['next_divisor'])}"
-    else:
-        if row['next_divisor'] == 1000.0:
-            return f"placeholder_{str(row['next_divisor'])}"
-        else:
-            return 'placeholder'
+    return f"count_{str(row['object_count_n'])}_div_{str(row['between_divisor'])}_nextdiv_{str(row['next_divisor'])}"
 
 
-def map_id_to_document_all_groups(map_id: int, section: str) -> None:
+
+def map_id_to_document_all_groups(map_id: int) -> None:
     """
     
     """
@@ -40,6 +35,38 @@ def map_id_to_document_all_groups(map_id: int, section: str) -> None:
 
     # print(map_id, words_columns['word'].values.tolist())
     return groups_df['word'].values.tolist()
+
+
+def map_ids_to_sequences(map_list_file: str) -> None:
+    """
+    
+    """
+
+    file_name, _ = os.path.splitext(map_list_file)
+    sequences_file = os.path.join(get_models_path(), file_name + '_sequences')
+    sequences = []
+
+    if os.path.exists(sequences_file):
+        with open(sequences_file, 'rb') as f:
+            sequences = pickle.load(f)
+    else:
+        map_list_file_path = os.path.join(get_lists_path(), map_list_file)
+        map_ids = get_map_ids_from_file_path(map_list_file_path)
+
+        for map_id in map_ids:
+            try:
+                sequences.append(map_id_to_document_all_groups(map_id))
+            except Exception as e:
+                print(f'{map_id}: {e}')
+
+        with open(sequences_file, 'wb') as f:
+            pickle.dump(sequences, f)
+
+    alphabet = set()
+    for s in sequences:
+        alphabet = alphabet.union(set(s))
+    print(len(alphabet))
+
 
 
 def map_id_to_document_context_sections(map_id: int, section: str) -> None:
