@@ -15,6 +15,13 @@ import pickle
 
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
+from sklearn.decomposition import PCA
+from sklearn.cluster import KMeans
+
+import numpy as np
+
+from sgt import SGT
+
 
 def columns_to_word(row: pd.Series) -> str:
     """
@@ -24,8 +31,7 @@ def columns_to_word(row: pd.Series) -> str:
     return f"count_{str(row['object_count_n'])}_div_{str(row['between_divisor'])}_nextdiv_{str(row['next_divisor'])}"
 
 
-
-def map_id_to_document_all_groups(map_id: int) -> None:
+def map_id_to_document_all_groups(map_id: int, section: str = None) -> None:
     """
     
     """
@@ -33,40 +39,116 @@ def map_id_to_document_all_groups(map_id: int) -> None:
     groups_df = get_groups_df(map_id)[['object_count_n', 'between_divisor', 'next_divisor']]
     groups_df['word'] = groups_df.apply(columns_to_word, axis=1)
 
-    # print(map_id, words_columns['word'].values.tolist())
     return groups_df['word'].values.tolist()
 
 
-def map_ids_to_sequences(map_list_file: str) -> None:
+def map_ids_to_section_sequences_df(map_list_file: str, section: str) -> pd.DataFrame:
     """
     
     """
 
     file_name, _ = os.path.splitext(map_list_file)
-    sequences_file = os.path.join(get_models_path(), file_name + '_sequences')
-    sequences = []
+    sequences_file = os.path.join(get_models_path(), file_name + f'_{section}_sequences.parquet')
+
+    columns = ['id', 'sequence']
+    sequences = pd.DataFrame(columns=columns)
+    sequences['id'] = sequences['id'].astype('int64')
+    sequences['sequence'] = sequences['sequence'].astype('object')
 
     if os.path.exists(sequences_file):
-        with open(sequences_file, 'rb') as f:
-            sequences = pickle.load(f)
+        sequences = pd.read_parquet(sequences_file)
     else:
         map_list_file_path = os.path.join(get_lists_path(), map_list_file)
         map_ids = get_map_ids_from_file_path(map_list_file_path)
 
         for map_id in map_ids:
             try:
-                sequences.append(map_id_to_document_all_groups(map_id))
+                sequence = map_id_to_document_context_sections(map_id, section)
+                new_row = pd.Series(index=columns, dtype='object')
+                new_row['id'] = map_id
+                new_row['sequence'] = sequence
+                sequences = pd.concat([sequences, new_row.to_frame().T], ignore_index=True)
             except Exception as e:
                 print(f'{map_id}: {e}')
 
-        with open(sequences_file, 'wb') as f:
-            pickle.dump(sequences, f)
+        sequences.to_parquet(sequences_file, index=False)
 
-    alphabet = set()
-    for s in sequences:
-        alphabet = alphabet.union(set(s))
-    print(len(alphabet))
+    return sequences
 
+
+def map_ids_to_sequences_df(map_list_file: str) -> pd.DataFrame:
+    """
+    
+    """
+
+    file_name, _ = os.path.splitext(map_list_file)
+    sequences_file = os.path.join(get_models_path(), file_name + '_sequences.parquet')
+
+    columns = ['id', 'sequence']
+    sequences = pd.DataFrame(columns=columns)
+    sequences['id'] = sequences['id'].astype('int64')
+    sequences['sequence'] = sequences['sequence'].astype('object')
+
+    if os.path.exists(sequences_file):
+        sequences = pd.read_parquet(sequences_file)
+    else:
+        map_list_file_path = os.path.join(get_lists_path(), map_list_file)
+        map_ids = get_map_ids_from_file_path(map_list_file_path)
+
+        for map_id in map_ids:
+            try:
+                sequence = map_id_to_document_all_groups(map_id)
+                new_row = pd.Series(index=columns, dtype='object')
+                new_row['id'] = map_id
+                new_row['sequence'] = sequence
+                sequences = pd.concat([sequences, new_row.to_frame().T], ignore_index=True)
+            except Exception as e:
+                print(f'{map_id}: {e}')
+
+        sequences.to_parquet(sequences_file, index=False)
+
+    return sequences
+
+
+def sgt_embedding(map_list_file: str):
+    """
+    
+    """
+    
+    sequences_df = map_ids_to_sequences_df(map_list_file)
+
+    #alphabet = set()
+    #for _, row in sequences_df.iterrows():
+    #    alphabet = alphabet.union(set(row['sequence']))
+
+    sgt_ = SGT(kappa=1,
+           lengthsensitive=False, 
+           mode='multiprocessing')
+    sgtembedding_df = sgt_.fit_transform(sequences_df)
+    
+    sgtembedding_df = sgtembedding_df.set_index('id')
+    print(sgtembedding_df)
+    
+    pca = PCA(n_components=2)
+    pca.fit(sgtembedding_df)
+
+    X=pca.transform(sgtembedding_df)
+
+    print(np.sum(pca.explained_variance_ratio_))
+    df = pd.DataFrame(data=X, columns=['x1', 'x2'])
+    print(df.head())
+
+    kmeans = KMeans(n_clusters=3, max_iter =300)
+    kmeans.fit(df)
+
+    labels = kmeans.predict(df)
+    centroids = kmeans.cluster_centers_
+
+    fig = plt.figure(figsize=(5, 5))
+    colmap = {1: 'r', 2: 'g', 3: 'b'}
+    colors = list(map(lambda x: colmap[x+1], labels))
+    plt.scatter(df['x1'], df['x2'], color=colors, alpha=0.5, edgecolor=colors)
+    plt.show()
 
 
 def map_id_to_document_context_sections(map_id: int, section: str) -> None:

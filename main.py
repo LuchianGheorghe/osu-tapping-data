@@ -3,13 +3,16 @@ from tapping_data.sections_statistics import get_sections_stats_dict
 from tapping_data.sections_parsing import get_sections_dfs_dict, visualize_sections
 from tapping_data.objects_parsing import get_objects_df
 from tapping_data.groups_parsing import get_groups_df
-from tapping_data.groups_doc2vec import create_model, get_similar_maps_doc2vec, map_id_to_document_context_sections, map_ids_to_sequences
+from tapping_data.groups_doc2vec import create_model, get_similar_maps_doc2vec, map_id_to_document_context_sections, map_ids_to_sequences_df, sgt_embedding, map_ids_to_section_sequences_df
 from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series
 from tapping_data.map_list_sections_stats_parsing import get_map_list_sections_stats_df
 from tapping_data.map_list_sections_stats_similarity import get_similar_maps, target_section_clustering, visualize_multiple_map_section
 
 from beatmap_reader import BeatmapIO
 import matplotlib.pyplot as plt
+
+import webbrowser
+import time
 
 
 def context_sections(map_id):
@@ -25,6 +28,7 @@ def context_sections(map_id):
 
 
 def main(*map_ids, map_list_file=None):
+	
 	if map_list_file:
 		# create_model(map_list_file, map_id_to_document=map_id_to_document_context_sections, section='divisor_4.0_count_16')
 		# get_similar_maps_doc2vec(435350, map_list_file, section='divisor_4.0_count_16', map_id_to_document=map_id_to_document_context_sections, top_n=10)
@@ -50,7 +54,9 @@ if __name__ == '__main__':
 	try:
 		#main(map_list_file='tourney_maps_list.txt')
 		#main(772293)
-		map_ids_to_sequences(map_list_file='tourney_maps_list_100.txt')
+		df = map_ids_to_section_sequences_df(map_list_file='tourney_maps_list.txt', section='divisor_4.0_count_16')
+		print(df[df.id == 1660932].to_string())
+		#main()
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
