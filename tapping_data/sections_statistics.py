@@ -21,7 +21,7 @@ def compute_statistics(data: list[float]) -> list[float]:
     return [round(summary.mean, 2)]
 
 
-def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], debug_mode=False) -> dict[str: float]:
+def get_sections_stats_dict(sections_dfs_dict: dict[str: list[pd.DataFrame]], debug_mode=False) -> dict[str: list[float]]:
     """
     
     """

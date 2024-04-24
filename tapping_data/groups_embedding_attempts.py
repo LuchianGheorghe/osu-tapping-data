@@ -27,8 +27,10 @@ def columns_to_word(row: pd.Series) -> str:
     """
     
     """
+    divisor = str(round(row['between_divisor'], 2))
+    count = str(int(round(row['object_count_n'], 2)))
 
-    return f"count_{str(row['object_count_n'])}_div_{str(row['between_divisor'])}_nextdiv_{str(row['next_divisor'])}"
+    return f"divisor_{divisor}_count_{count}"
 
 
 def map_id_to_document_all_groups(map_id: int, section: str = None) -> None:
@@ -39,7 +41,12 @@ def map_id_to_document_all_groups(map_id: int, section: str = None) -> None:
     groups_df = get_groups_df(map_id)[['object_count_n', 'between_divisor', 'next_divisor']]
     groups_df['word'] = groups_df.apply(columns_to_word, axis=1)
 
-    return groups_df['word'].values.tolist()
+    document = []
+    for _, row in groups_df.iterrows():
+        document.append(row['word'])
+        document.append(f"next_{str(round(row['next_divisor'], 2))}")
+
+    return document
 
 
 def map_ids_to_section_sequences_df(map_list_file: str, section: str) -> pd.DataFrame:
@@ -110,44 +117,43 @@ def map_ids_to_sequences_df(map_list_file: str) -> pd.DataFrame:
     return sequences
 
 
-def sgt_embedding(map_list_file: str):
+def sgt_search(map_list_file: str, target_map_id: int = None, target_section: str = None) -> None:
     """
     
     """
-    
-    sequences_df = map_ids_to_sequences_df(map_list_file)
 
-    #alphabet = set()
-    #for _, row in sequences_df.iterrows():
-    #    alphabet = alphabet.union(set(row['sequence']))
+    target_section = 'divisor_4.0_count_16'
+    visualize = True
+    open_links = False
 
-    sgt_ = SGT(kappa=1,
-           lengthsensitive=False, 
+    sequences_df = map_ids_to_section_sequences_df(map_list_file, target_section)
+    print(sequences_df)
+
+    sgt_ = SGT(kappa=10,
+           lengthsensitive=True, 
            mode='multiprocessing')
     sgtembedding_df = sgt_.fit_transform(sequences_df)
-    
     sgtembedding_df = sgtembedding_df.set_index('id')
-    print(sgtembedding_df)
-    
-    pca = PCA(n_components=2)
-    pca.fit(sgtembedding_df)
 
-    X=pca.transform(sgtembedding_df)
+    query_sequence = map_id_to_document_context_sections(target_map_id, target_section)
+    print(query_sequence)
+    query_sgt_embedding = sgt_.fit(query_sequence)
 
-    print(np.sum(pca.explained_variance_ratio_))
-    df = pd.DataFrame(data=X, columns=['x1', 'x2'])
-    print(df.head())
+    similarity = sgtembedding_df.dot(query_sgt_embedding)
+    closest_map_ids = similarity.sort_values(ascending=False).head(10).index.values
 
-    kmeans = KMeans(n_clusters=3, max_iter =300)
-    kmeans.fit(df)
+    print(similarity.sort_values(ascending=False))
 
-    labels = kmeans.predict(df)
-    centroids = kmeans.cluster_centers_
+    if visualize:
+        for map_id in closest_map_ids:
+            groups_df = get_groups_df(map_id)
+            visualize_sections(groups_df)
 
-    fig = plt.figure(figsize=(5, 5))
-    colmap = {1: 'r', 2: 'g', 3: 'b'}
-    colors = list(map(lambda x: colmap[x+1], labels))
-    plt.scatter(df['x1'], df['x2'], color=colors, alpha=0.5, edgecolor=colors)
+    if open_links:
+        for map_id in closest_map_ids:
+            webbrowser.open(f'https://osu.ppy.sh/b/{map_id}')
+            time.sleep(0.5)
+
     plt.show()
 
 
@@ -175,8 +181,18 @@ def map_id_to_document_context_sections(map_id: int, section: str) -> None:
 
     context_sections_df['word'] = context_sections_df.apply(columns_to_word, axis=1)
 
+    context_sections_list = []
+    for _, row in context_sections_df.iterrows():
+        if section in row['word']:
+            context_sections_list.append(row['word'])
+        else:
+            context_sections_list.append('other')
+
+        if '1000' in str(row['next_divisor']):
+            context_sections_list.append(f"next_{str(round(row['next_divisor'], 2))}")
+
     # print(map_id, words_columns['word'].values.tolist())
-    return context_sections_df['word'].values.tolist()
+    return context_sections_list
 
 
 def create_model(map_list_file: str, section: str, map_id_to_document: Callable = map_id_to_document_all_groups) -> None:

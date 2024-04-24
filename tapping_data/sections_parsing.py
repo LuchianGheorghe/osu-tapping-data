@@ -111,16 +111,16 @@ def split_sections_by_variance(start_times: list[float]) -> list[list[float]]:
         score = total_variance + nr_of_splits * 500
         
         if score > prev_score: break
-        # print(f'total_variance: {total_variance}, nr_of_splits: {nr_of_splits}, score: {score}')
+        print(f'total_variance: {total_variance}, nr_of_splits: {nr_of_splits}, score: {score}')
 
         prev_score = score
         best_fit = jnb
         nr_of_splits += 1
-    
+
     variance_split_groups_start_times = []
     for split_group in best_fit.groups_:
         variance_split_groups_start_times.append(split_group.tolist())
-        
+    
     return variance_split_groups_start_times
 
 
