@@ -4,81 +4,34 @@ from tapping_data.sections_parsing import get_sections_dfs_dict, visualize_secti
 from tapping_data.objects_parsing import get_objects_df
 from tapping_data.groups_parsing import get_groups_df
 from tapping_data.groups_embedding_attempts import create_model, get_similar_maps_doc2vec, map_id_to_document_context_sections, map_ids_to_sequences_df, sgt_search, map_ids_to_section_sequences_df, map_id_to_document_all_groups
-from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series
+from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series, round_divisor
 from tapping_data.map_list_sections_stats_parsing import get_map_list_sections_stats_df
 from tapping_data.map_list_sections_stats_similarity import get_similar_maps, target_section_clustering
+from tapping_data.groups_rank_distance import map_id_to_ranking, compute_rank_distance, get_similar_maps_by_rank_distance
 
 from beatmap_reader import BeatmapIO
 import matplotlib.pyplot as plt
 
 import webbrowser
 import time
-
-
-def context_sections(map_id):
-	groups_df = get_groups_df(map_id, update_entry=True)
-
-	all_context_sections_stats_dict = get_all_context_sections_stats_dict(groups_df)
-	for section in all_context_sections_stats_dict:
-		print(section)
-		for subsection in all_context_sections_stats_dict[section]:
-			print(f'\t{subsection}: {all_context_sections_stats_dict[section][subsection]}')
-
-	visualize_sections(groups_df)
+import os
 
 
 def main(*map_ids, map_list_file=None):
-	
+
 	if map_list_file:
-		target_map_id = 1499108
-		target_section= 'divisor_4.0_count_16'
-		# visualize_multiple_map_section()
-		# target_section_clustering(target_section, map_list_file)
-		get_similar_maps(target_map_id, target_section, map_list_file, visualize=True, open_links=False)
-
+		get_similar_maps_by_rank_distance(target_map_id=3018109, target_between_divisor=4.0, target_object_count_n=16, top_n=5, map_list_file=map_list_file, visualize=False, open_links=True)
 	else:
+		rankings = []
 		for map_id in map_ids:
-			#objects_df = get_objects_df(map_id)
-			#print(objects_df)
-
-			groups_df = get_groups_df(map_id)
-
-			start_times = groups_df.loc[
-				(groups_df['between_divisor'] == 4.0) &
-				(groups_df['object_count_n'] == 16)
-			]['start_time'].values
-
-			detrend_start_times = []
-			for i in range(1, len(start_times)):
-				detrend_start_times.append(
-					start_times[i] - start_times[i - 1]
-				)
-
-			inverse_detrend_start_times = []
-			for val in detrend_start_times:
-				inverse_detrend_start_times.append((1 / val))
-
-			# print(start_times)
-			# print(detrend_start_times)
-			print(inverse_detrend_start_times)
-
-			visualize_sections(groups_df)
-			plt.show()
-			start_times = start_times[1:]
-
-			#plt.plot(start_times)
-			#plt.plot(detrend_start_times)
-			plt.plot(start_times, inverse_detrend_start_times)
-			
-		plt.show()
-
+			rankings.append()
+		print(compute_rank_distance(rankings[0], rankings[1]))
 
 
 if __name__ == '__main__':
 	try:
-		#main(map_list_file='tourney_maps_list.txt')
-		main(2983479)
-		#df = map_ids_to_section_sequences_df(map_list_file='tourney_maps_list_100.txt', section='divisor_4.0_count_16')
+		main(map_list_file='tourney_maps_list.txt')
+		#main(345099, 550235)
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:
@@ -138,3 +91,4 @@ if __name__ == '__main__':
 	# main(3261335) # carless claris - 1/3s
 	# main(252238) # image material
 	# main(path='test.txt') 
+ 

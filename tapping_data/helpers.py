@@ -77,4 +77,4 @@ def validate_map_id(map_id):
 
 def get_map_ids_from_file_path(path):
     with open(path) as file:
-        return list(set([validate_map_id(map_id[:-1]) for map_id in file.readlines()]))
+        return list(set([validate_map_id(map_id) for map_id in file.readlines()]))
