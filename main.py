@@ -20,7 +20,7 @@ import os
 def main(*map_ids, map_list_file=None):
 
 	if map_list_file:
-		get_similar_maps_by_rank_distance(target_map_id=3018109, target_between_divisor=4.0, target_object_count_n=16, top_n=5, map_list_file=map_list_file, visualize=False, open_links=True)
+		get_similar_maps_by_rank_distance(target_map_id=351752, target_between_divisor=4.0, target_object_count_n=16, top_n=5, map_list_file=map_list_file, visualize=True, open_links=False)
 	else:
 		rankings = []
 		for map_id in map_ids:

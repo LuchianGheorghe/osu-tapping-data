@@ -143,7 +143,7 @@ def map_id_to_ranking(map_id: float, between_divisor: float, object_count_n: int
     return indexed_freq_times_between_n
 
 
-def compute_rank_distance(indexed_ranking_a, indexed_ranking_b) -> int:
+def compute_rank_distance(indexed_ranking_a, indexed_ranking_b, series: bool = True) -> int:
     """
 
     """
@@ -151,6 +151,19 @@ def compute_rank_distance(indexed_ranking_a, indexed_ranking_b) -> int:
     distance = sum(abs(indexed_ranking_a[item] - indexed_ranking_b[item]) for item in indexed_ranking_a)
 
     return distance
+
+
+def compute_rank_distance_against_series(indexed_ranking_a: dict, series_rankings: pd.Series) -> int:
+    """
+
+    """
+
+    distances = []
+    for ranking in series_rankings:
+        distance = sum(abs(indexed_ranking_a[item] - ranking[item]) for item in indexed_ranking_a)
+        distances.append(distance)
+
+    return pd.Series(distances)
 
 
 def selected_group_count(map_id: int, between_divisor: float, object_count_n: int) -> int:
@@ -172,58 +185,60 @@ def get_similar_maps_by_rank_distance(target_map_id: str, target_between_divisor
     """
     
     file_name, _ = os.path.splitext(map_list_file)
-    rank_distance_file = file_name + f'_divisor_{target_between_divisor}_count_{target_object_count_n}_rank_distance'
+    rank_distance_file = file_name + f'_divisor_{target_between_divisor}_count_{target_object_count_n}_rank_distance.parquet'
     rank_distance_file_path = os.path.join(get_parsed_lists_path(), rank_distance_file)
 
-    if os.path.exists(rank_distance_file_path):
-        with open(rank_distance_file_path, 'rb') as file:
-            rankings = pickle.load(file) 
-    else:
+    if not os.path.exists(rank_distance_file_path):
         map_list_file_path = os.path.join(get_lists_path(), map_list_file)
         map_ids = get_map_ids_from_file_path(map_list_file_path)
-        rankings = {}
+
+        columns = ['map_id', 'group_count', 'ranking', 'rank_distance']
+        rankings_df = pd.DataFrame(columns=columns)
+        
         for map_id in map_ids:
             try:
                 ranking = map_id_to_ranking(map_id, between_divisor=target_between_divisor, object_count_n=target_object_count_n)
-                rankings[map_id] = ranking
+
+                new_row = create_empty_series(columns=columns)
+                new_row['map_id'] = map_id
+                # new_row['group_type'] = f'divisor_{target_between_divisor}_count_{target_object_count_n}'
+                new_row['group_count'] = selected_group_count(map_id, target_between_divisor, target_object_count_n)
+                new_row['ranking'] = ranking
+                new_row['rank_distance'] = 0
+
+                rankings_df = pd.concat([rankings_df, new_row.to_frame().T], ignore_index=True)
             except Exception as e:
                 print(map_id, e)
-        with open(rank_distance_file_path, 'wb') as file:
-            pickle.dump(rankings, file)
-    
+
+        rankings_df['map_id'] = rankings_df['map_id'].astype('int32')
+        # rankings_df['group_type'] = rankings_df['group_type'].astype('string')
+        rankings_df['group_count'] = rankings_df['group_count'].astype('int32')
+        rankings_df['ranking'] = rankings_df['ranking'].astype('object')
+        rankings_df['rank_distance'] = rankings_df['rank_distance'].astype('int32')
+
+        rankings_df.to_parquet(rank_distance_file_path, index=False)
+    else:
+        rankings_df = pd.read_parquet(rank_distance_file_path)
+
     target_ranking = map_id_to_ranking(target_map_id, between_divisor=target_between_divisor, object_count_n=target_object_count_n)
-    
-    columns = ['map_id', 'rank_distance', 'group_count']
-    similarity_search_result = pd.DataFrame(columns=columns)
-    for map_id in rankings:
-        rank_distance = compute_rank_distance(target_ranking, rankings[map_id])
-        group_count = selected_group_count(map_id, target_between_divisor, target_object_count_n)
-
-        new_row = create_empty_series(columns=columns)
-        new_row['map_id'] = map_id
-        new_row['rank_distance'] = rank_distance
-        new_row['group_count'] = group_count
-
-        similarity_search_result = pd.concat([similarity_search_result, new_row.to_frame().T], ignore_index=True)
+    rankings_df['rank_distance'] = compute_rank_distance_against_series(target_ranking, rankings_df['ranking'])
 
     target_group_count = selected_group_count(target_map_id, target_between_divisor, target_object_count_n)
-    group_count_filter = abs(similarity_search_result['group_count'] - target_group_count) < target_group_count * 0.50
+    group_count_filter = abs(rankings_df['group_count'] - target_group_count) < target_group_count * 0.50
 
-    similarity_search_result = similarity_search_result.loc[group_count_filter].sort_values('rank_distance')
-    similarity_search_result_map_ids = similarity_search_result['map_id'].values.tolist()[:top_n]
+    rankings_df = rankings_df.loc[group_count_filter].sort_values('rank_distance')
 
-    print(similarity_search_result)
-    print(similarity_search_result_map_ids)
+    similarity_search_map_ids = rankings_df['map_id'].values.tolist()[:top_n]
 
     visualize_sections(get_groups_df(target_map_id))
 
     if visualize:
-        for map_id in similarity_search_result_map_ids:
+        for map_id in similarity_search_map_ids:
             groups_df = get_groups_df(map_id)
             visualize_sections(groups_df)
 
     if open_links:
-        for map_id in similarity_search_result_map_ids:
+        for map_id in similarity_search_map_ids:
             webbrowser.open(f'https://osu.ppy.sh/b/{map_id}')
             time.sleep(0.5)
 
