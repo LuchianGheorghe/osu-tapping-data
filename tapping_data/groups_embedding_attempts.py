@@ -1,6 +1,6 @@
-from tapping_data.groups_parsing import get_groups_df
+from tapping_data.groups_parsing import get_groups_df, visualize_all_groups
 from tapping_data.helpers import get_lists_path, get_map_ids_from_file_path, get_models_path
-from tapping_data.sections_parsing import get_sections_dfs_dict, visualize_sections
+from tapping_data.sections_parsing import get_sections_dfs_dict
 from tapping_data.context_sections_parsing import get_split_context_sections_dfs
 
 import pandas as pd
@@ -147,7 +147,7 @@ def sgt_search(map_list_file: str, target_map_id: int = None, target_section: st
     if visualize:
         for map_id in closest_map_ids:
             groups_df = get_groups_df(map_id)
-            visualize_sections(groups_df)
+            visualize_all_groups(groups_df)
 
     if open_links:
         for map_id in closest_map_ids:
@@ -251,12 +251,12 @@ def get_similar_maps_doc2vec(map_id: int, map_list_file: str, section: str, top_
         print(f'Document ID: {doc_id}, Similarity: {similarity}') 
 
         groups_df = get_groups_df(doc_id)
-        visualize_sections(groups_df)
+        visualize_all_groups(groups_df)
 		
         webbrowser.open(f'https://osu.ppy.sh/b/{doc_id}')
         time.sleep(0.5)
     groups_df = get_groups_df(map_id)
-    visualize_sections(groups_df)
+    visualize_all_groups(groups_df)
     plt.show()
 
 

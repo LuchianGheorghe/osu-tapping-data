@@ -1,8 +1,4 @@
-from tapping_data.context_sections_parsing import get_all_context_sections_stats_dict
-from tapping_data.sections_statistics import get_sections_stats_dict
-from tapping_data.sections_parsing import get_sections_dfs_dict, visualize_sections
-from tapping_data.objects_parsing import get_objects_df
-from tapping_data.groups_parsing import get_groups_df
+from tapping_data.groups_parsing import get_groups_df, visualize_all_groups
 from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series
 from tapping_data.map_list_sections_stats_parsing import get_map_list_sections_stats_df, parse_map_list_sections_stats
 
@@ -100,7 +96,7 @@ def get_similar_maps(target_map_id: int, target_section: str, map_list_file: str
 	if visualize:
 		for map_id in closest_map_ids:
 			groups_df = get_groups_df(map_id)
-			visualize_sections(groups_df)
+			visualize_all_groups(groups_df)
 	
 	if open_links:
 		for map_id in closest_map_ids:
@@ -141,7 +137,7 @@ def target_section_clustering(target_section: str, map_list_file: str) -> None:
 		print(i, map_ids)
 		for map_id in map_ids:
 			groups_df = get_groups_df(map_id)
-			visualize_sections(groups_df)
+			visualize_all_groups(groups_df)
 		plt.show()
 
 

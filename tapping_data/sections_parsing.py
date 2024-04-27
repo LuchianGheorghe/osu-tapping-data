@@ -17,29 +17,6 @@ def visualize_sections_old(groups_df: pd.DataFrame) -> None:
     plt.show(block=False)
 
 
-def visualize_sections(groups_df: pd.DataFrame) -> None:
-    """
-    Visualize sections with a 3D scatter plot.
-    
-    Args:
-    - groups_df (pd.DataFrame): A DataFrame containing the columns 'start_time', 
-                                'between_divisor', 'object_count_n', and 'between_divisor' used for coloring.
-    """
-    
-    # Create a new figure for each plot
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    
-    # Generate the scatter plot
-    map_plot = ax.scatter(groups_df['start_time'], groups_df['between_divisor'], groups_df['object_count_n'], c=groups_df['between_divisor'], cmap='Accent')
-    
-    # Add a color bar for reference
-    plt.colorbar(map_plot)
-    
-    # Display the plot
-    plt.show(block=False)
-
-
 def visualize_sections_sorted(groups_df: pd.DataFrame) -> None:
     """
     

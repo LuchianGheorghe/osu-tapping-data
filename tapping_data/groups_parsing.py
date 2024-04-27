@@ -1,7 +1,40 @@
-import os
-import pandas as pd
 from tapping_data.objects_parsing import get_objects_df
 from tapping_data.helpers import create_empty_series, get_parsed_maps_path, round_divisor
+
+import os
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def visualize_all_groups(map_id: int) -> None:
+	groups_df = get_groups_df(map_id)
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111, projection='3d')
+
+	map_plot = ax.scatter(groups_df['start_time'], groups_df['between_divisor'], groups_df['object_count_n'], c=groups_df['between_divisor'], cmap='Accent')
+
+	plt.title(f'{map_id=}')
+	plt.colorbar(map_plot)
+	plt.show(block=False)
+
+
+def visualize_select_group(map_id: int, between_divisor: float, object_count_n: int) -> None:
+	groups_df = get_groups_df(map_id)
+	
+	select_groups_filter = (groups_df['between_divisor'] == between_divisor) & (groups_df['object_count_n'] == object_count_n)
+	select_groups_df = groups_df.loc[select_groups_filter]
+
+	plt.figure()
+	plt.title(f'{map_id=}, group_type=divisor_{between_divisor}_count_{object_count_n}')
+	plt.scatter(select_groups_df['start_time'], [1] * len(select_groups_df), c='black')
+	
+	plt.show(block=False)
+
+
+def visualize_select_group_n_samples(map_ids: list, n_samples: int = 10, open_links: bool = False):
+	pass
 
 
 def cast_types(df_groups):
