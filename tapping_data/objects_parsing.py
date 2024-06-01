@@ -5,7 +5,7 @@ from tapping_data.helpers import get_downloaded_maps_path, get_parsed_maps_path,
 from beatmap_reader import BeatmapIO
 
 
-def cast_types(objects_df):
+def cast_types_objects(objects_df):
 	objects_df['start_time'] = objects_df['start_time'].astype('int32')
 	objects_df['end_time'] = objects_df['end_time'].astype('int32')
 	objects_df['beat_length'] = objects_df['beat_length'].astype('float32')
@@ -39,7 +39,7 @@ def parse_objects(map_id, map_objects_file):
 	t_idx = 0
 	for idx, hitobject in enumerate(beatmap.hitobjects):
 		for i in range(t_idx + 1, len(beatmap.timing_points)):
-			if beatmap.timing_points[i].offset <= hitobject.start_time():
+			if beatmap.timing_points[i].offset <= hitobject.start_time() or beatmap.timing_points[i].beat_length != 0:
 				t_idx = i
 			else:
 				break
@@ -60,12 +60,14 @@ def parse_objects(map_id, map_objects_file):
 		objects_df = pd.concat([objects_df, new_object.to_frame().T], ignore_index=True)
 		new_object = create_empty_series(columns)
 
-	objects_df = cast_types(objects_df)
+	objects_df = cast_types_objects(objects_df)
 	objects_df.to_parquet(map_objects_file, index=False)
 
 
 def get_objects_df(map_id, update_entry=False):
 	map_objects_file = os.path.join(get_parsed_maps_path(), str(map_id) + '_objects')
+	
 	if not os.path.exists(map_objects_file) or update_entry:
 		parse_objects(map_id, map_objects_file)
+	
 	return pd.read_parquet(map_objects_file)

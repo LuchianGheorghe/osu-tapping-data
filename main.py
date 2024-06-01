@@ -1,7 +1,8 @@
 from tapping_data.objects_parsing import get_objects_df
 from tapping_data.groups_parsing import get_groups_df, visualize_all_groups, visualize_select_group
 from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series, round_divisor
-from tapping_data.groups_rank_distance import map_id_to_ranking, compute_rank_distance, get_similar_maps_by_rank_distance
+from tapping_data.groups_ranking_utility import compute_rank_distance, get_similar_maps_by_rank_distance
+from tapping_data.groups_ranking_parsing import get_groups_ranking_df, get_groups_rankings_list_df
 
 from beatmap_reader import BeatmapIO
 import matplotlib.pyplot as plt
@@ -9,22 +10,23 @@ import matplotlib.pyplot as plt
 
 def main(*map_ids, map_list_file=None):
 	if map_list_file:
-		get_similar_maps_by_rank_distance(target_map_id=1521481, target_between_divisor=4.0, target_object_count_n=16, top_n=5, map_list_file=map_list_file, visualize=True, open_links=False)
+		#groups_rankings_list_df = get_groups_rankings_list_df(map_list_file, between_divisor=4.0, object_count_n=16, update_entry=False)
+		#print(groups_rankings_list_df)
+		
+		get_similar_maps_by_rank_distance(map_list_file, target_map_id=2983479, target_between_divisor=4.0, target_object_count_n=16, top_n=8, visualize=True, open_links=False)
 	else:
-		rankings = []
 		for map_id in map_ids:
-			rankings.append()
-		print(compute_rank_distance(rankings[0], rankings[1]))
+			groups_ranking_df = get_groups_ranking_df(map_id, between_divisor=4.0, object_count_n=16, update_entry=True)
+			print(groups_ranking_df)
 
 import pandas as pd
 if __name__ == '__main__':
 	try:
-		#visualize_sections(get_groups_df(1521481))
-		#plt.show()
-		df = pd.read_parquet('content/lists_parsed/nm2_list_divisor_4.0_count_8_rank_distance.parquet')
-		print(df)
-		#main(map_list_file='all_maps_2015-2018.txt')
-		#main(345099)
+		# visualize_sections(get_groups_df(1521481))
+		# plt.show()
+		main(map_list_file='all_maps_2015-2018.txt')
+		# main(129891)
+		# print(get_groups_df(1257904, update_entry=True))
 	except ValueError as invalid_id:
 		print(invalid_id)
 	except BeatmapIO.BeatmapIOException as non_std_gamemode:

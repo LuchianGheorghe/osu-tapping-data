@@ -37,25 +37,29 @@ def visualize_select_group_n_samples(map_ids: list, n_samples: int = 10, open_li
 	pass
 
 
-def cast_types(df_groups):
-	df_groups['start_time'] = df_groups['start_time'].astype('int32')
-	df_groups['end_time'] = df_groups['end_time'].astype('int32')
-	df_groups['beat_length'] = df_groups['beat_length'].astype('float32')
-	df_groups['time_between_objects'] = df_groups['time_between_objects'].astype('float32')
-	df_groups['time_next_group'] = df_groups['time_next_group'].astype('float32')
-	df_groups['object_count'] = df_groups['object_count'].astype('int16')
-	df_groups['object_count_n'] = df_groups['object_count_n'].astype('int16')
-	df_groups['between_divisor'] = df_groups['between_divisor'].astype('float32')
-	df_groups['next_divisor'] = df_groups['next_divisor'].astype('float32')
-	return df_groups
+def cast_types_groups(groups_df):
+	groups_df['start_time'] = groups_df['start_time'].astype('int32')
+	groups_df['end_time'] = groups_df['end_time'].astype('int32')
+	groups_df['beat_length'] = groups_df['beat_length'].astype('float32')
+	groups_df['time_between_objects'] = groups_df['time_between_objects'].astype('float32')
+	groups_df['time_next_group'] = groups_df['time_next_group'].astype('float32')
+	groups_df['object_count'] = groups_df['object_count'].astype('int16')
+	groups_df['object_count_n'] = groups_df['object_count_n'].astype('int16')
+	groups_df['between_divisor'] = groups_df['between_divisor'].astype('float32')
+	groups_df['next_divisor'] = groups_df['next_divisor'].astype('float32')
+	return groups_df
 
 
 def normalize_beat_length(beat_length):
-    while beat_length < 185:
-        beat_length *= 2
-    while beat_length > 500:
-        beat_length /= 2
-    return beat_length
+	if beat_length == 0:
+		print("Error: beat_length 0")
+		raise Exception
+	
+	while beat_length < 185:
+		beat_length *= 2
+	while beat_length > 500:
+		beat_length /= 2
+	return beat_length
 
 
 def normalize_count(object_count_row):
@@ -108,12 +112,14 @@ def parse_groups(map_id, map_groups_file):
 	groups_df.next_divisor = (groups_df.beat_length / groups_df.time_next_group).apply(lambda x: round_divisor(x))
 	groups_df.iloc[-1, groups_df.columns.get_loc('next_divisor')] = 0
 
-	groups_df = cast_types(groups_df)
+	groups_df = cast_types_groups(groups_df)
 	groups_df.to_parquet(map_groups_file, index=False)
 
 
 def get_groups_df(map_id, update_entry=False):
 	map_groups_file = os.path.join(get_parsed_maps_path(), str(map_id) + '_groups')
+	
 	if not os.path.exists(map_groups_file) or update_entry:
 		parse_groups(map_id, map_groups_file)
+	
 	return pd.read_parquet(map_groups_file)
