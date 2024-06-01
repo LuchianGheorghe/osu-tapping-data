@@ -1,7 +1,7 @@
-# osu-tapping-data
+## osu-tapping-data
 
 # Parse any osu!std beatmap into an objects dataframe 
-```
+```py
 # https://osu.ppy.sh/beatmapsets/39804#osu/129891 - Freedom Dive [FOUR DIMENSIONS]
 
 from tapping_data.objects_parsing import get_objects_df
@@ -29,8 +29,8 @@ print(objects_df)
 - `beat_length` - milliseconds in a full beat of the bpm of the object (bpm = 60000 / beat_length)
 - `time_next_object` - milliseconds from this object's `start_time` until the next object's `start_time`
    
-# Easily parse the objects into groups (triples, bursts, streams) 
-```
+# Parse objects into groups (doubles/triples, bursts, streams) 
+```py
 # https://osu.ppy.sh/beatmapsets/39804#osu/129891 - Freedom Dive [FOUR DIMENSIONS]
 
 from tapping_data.groups_parsing import get_groups_df
