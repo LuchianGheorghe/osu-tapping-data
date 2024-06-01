@@ -1,12 +1,6 @@
-from tapping_data.context_sections_parsing import get_all_context_sections_stats_dict
-from tapping_data.sections_statistics import get_sections_stats_dict
-from tapping_data.sections_parsing import get_sections_dfs_dict
 from tapping_data.objects_parsing import get_objects_df
 from tapping_data.groups_parsing import get_groups_df, visualize_all_groups
-from tapping_data.groups_embedding_attempts import create_model, get_similar_maps_doc2vec, map_id_to_document_context_sections, map_ids_to_sequences_df, sgt_search, map_ids_to_section_sequences_df, map_id_to_document_all_groups
 from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series, round_divisor, get_parsed_lists_path
-from tapping_data.map_list_sections_stats_parsing import get_map_list_sections_stats_df
-from tapping_data.map_list_sections_stats_similarity import get_similar_maps, target_section_clustering
 
 from beatmap_reader import BeatmapIO
 
