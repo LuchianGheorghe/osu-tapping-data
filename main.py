@@ -13,10 +13,10 @@ def main(*map_ids, map_list_file=None):
 		#groups_rankings_list_df = get_groups_rankings_list_df(map_list_file, between_divisor=4.0, object_count_n=16, update_entry=False)
 		#print(groups_rankings_list_df)
 		
-		get_similar_maps_by_rank_distance(map_list_file, target_map_id=2983479, target_between_divisor=4.0, target_object_count_n=16, top_n=8, visualize=True, open_links=False)
+		get_similar_maps_by_rank_distance(map_list_file, target_map_id=129891, target_between_divisor=4.0, target_object_count_n=16, top_n=8, visualize=True, open_links=True)
 	else:
 		for map_id in map_ids:
-			groups_ranking_df = get_groups_ranking_df(map_id, between_divisor=4.0, object_count_n=16, update_entry=True)
+			groups_ranking_df = get_groups_ranking_df(map_id, between_divisor=4.0, object_count_n=16, update_entry=False)
 			print(groups_ranking_df)
 
 import pandas as pd

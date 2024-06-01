@@ -29,12 +29,12 @@ def get_similar_maps_by_rank_distance(map_list_file: str, target_map_id: str, ta
     groups_rankings_list_df = get_groups_rankings_list_df(map_list_file, target_between_divisor, target_object_count_n)
 
     target_ranking = map_id_to_ranking(target_map_id, target_between_divisor, target_object_count_n)
-    groups_rankings_list_df['rank_distance'] = compute_rank_distance_against_series(target_ranking, groups_rankings_list_df['ranking'])
+    groups_rankings_list_df['distance'] = compute_rank_distance_against_series(target_ranking, groups_rankings_list_df['ranking'])
 
     target_group_count = selected_group_count(target_map_id, target_between_divisor, target_object_count_n)
     group_count_filter = abs(groups_rankings_list_df['group_count'] - target_group_count) < target_group_count * 0.50
 
-    groups_rankings_list_df = groups_rankings_list_df.loc[group_count_filter].sort_values('rank_distance')
+    groups_rankings_list_df = groups_rankings_list_df.loc[group_count_filter].sort_values('distance')
 
     similarity_search_map_ids = groups_rankings_list_df['map_id'].values.tolist()[:top_n]
 
