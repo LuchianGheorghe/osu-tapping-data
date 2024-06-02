@@ -75,9 +75,13 @@ def compute_indexed_freq_times_between_n(sorted_freq_times_between_n: dict[str: 
             for j in range(i + 1, len(percentages)):
                 if abs(percentages[i] - percentages[j]) <= threshold:
                     current_sequence.add(j)
+                    sequence_start = j + 1
                 else:
                     sequence_start = j
                     break
+
+            # print(f'{current_sequence=}, {sequence_start=}')
+            
             if len(current_sequence) > 1: 
                 mean = sum(list(current_sequence)) / len(current_sequence)
                 for idx in current_sequence:
@@ -99,7 +103,7 @@ def map_id_to_ranking(map_id: float, between_divisor: float, object_count_n: int
     sorted_freq_times_between_n = dict(sorted(freq_times_between_n.items(), key=lambda item: item[1], reverse=True))
     indexed_freq_times_between_n = compute_indexed_freq_times_between_n(sorted_freq_times_between_n)
 
-    # print(map_id, sorted_freq_times_between_n, indexed_freq_times_between_n, list(indexed_freq_times_between_n), list(indexed_freq_times_between_n.values()))
+    print(map_id, sorted_freq_times_between_n, indexed_freq_times_between_n, list(indexed_freq_times_between_n), list(indexed_freq_times_between_n.values()))
 
     return indexed_freq_times_between_n
 
