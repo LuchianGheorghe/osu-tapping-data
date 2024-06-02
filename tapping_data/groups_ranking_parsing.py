@@ -97,13 +97,16 @@ def compute_indexed_freq_times_between_n(sorted_freq_times_between_n: dict[str: 
     return ranking_freq_times_between_n
 
 
-def map_id_to_ranking(map_id: float, between_divisor: float, object_count_n: int) -> list[float]:
+def map_id_to_ranking(map_id: float, between_divisor: float, object_count_n: int, debug: bool = False) -> list[float]:
     times_between_n = compute_times_between_n(map_id, between_divisor, object_count_n)
     freq_times_between_n = compute_freq_times_between_n(times_between_n)
     sorted_freq_times_between_n = dict(sorted(freq_times_between_n.items(), key=lambda item: item[1], reverse=True))
     indexed_freq_times_between_n = compute_indexed_freq_times_between_n(sorted_freq_times_between_n)
 
-    # print(map_id, sorted_freq_times_between_n, indexed_freq_times_between_n, list(indexed_freq_times_between_n), list(indexed_freq_times_between_n.values()))
+    if debug:
+        print(map_id)
+        print(sorted_freq_times_between_n, indexed_freq_times_between_n)
+        print(list(indexed_freq_times_between_n), list(indexed_freq_times_between_n.values()))
 
     return indexed_freq_times_between_n
 
