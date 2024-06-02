@@ -113,4 +113,6 @@ print(groups_df)
   - better/actual tests
     
 # Credits
-  - osu_analysis by abraker, used for parsing raw beatmap files: https://github.com/abraker-osu/osu_analysis 
+  - osu_analysis by abraker, used for parsing raw beatmap files: https://github.com/abraker-osu/osu_analysis
+  - group distance ranking/embedding based on concepts from: An efficient approach for the rank aggregation problem: https://www.sciencedirect.com/science/article/pii/S0304397506003392
+ 
