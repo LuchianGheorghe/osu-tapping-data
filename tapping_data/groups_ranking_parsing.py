@@ -98,7 +98,7 @@ def compute_indexed_freq_times_between_n(sorted_freq_times_between_n: dict[str: 
 
 
 def map_id_to_ranking(map_id: float, between_divisor: float, object_count_n: int) -> list[float]:
-    times_between_n = compute_times_between_n(map_id, between_divisor=4.0, object_count_n=16)
+    times_between_n = compute_times_between_n(map_id, between_divisor, object_count_n)
     freq_times_between_n = compute_freq_times_between_n(times_between_n)
     sorted_freq_times_between_n = dict(sorted(freq_times_between_n.items(), key=lambda item: item[1], reverse=True))
     indexed_freq_times_between_n = compute_indexed_freq_times_between_n(sorted_freq_times_between_n)
