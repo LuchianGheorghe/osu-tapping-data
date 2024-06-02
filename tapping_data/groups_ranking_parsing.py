@@ -103,7 +103,7 @@ def map_id_to_ranking(map_id: float, between_divisor: float, object_count_n: int
     sorted_freq_times_between_n = dict(sorted(freq_times_between_n.items(), key=lambda item: item[1], reverse=True))
     indexed_freq_times_between_n = compute_indexed_freq_times_between_n(sorted_freq_times_between_n)
 
-    print(map_id, sorted_freq_times_between_n, indexed_freq_times_between_n, list(indexed_freq_times_between_n), list(indexed_freq_times_between_n.values()))
+    # print(map_id, sorted_freq_times_between_n, indexed_freq_times_between_n, list(indexed_freq_times_between_n), list(indexed_freq_times_between_n.values()))
 
     return indexed_freq_times_between_n
 
@@ -161,7 +161,7 @@ def cast_types_groups_rankings_list(groups_rankings_list_df: pd.DataFrame) -> pd
     return groups_rankings_list_df
 
 
-def parse_groups_rankings_list(map_list_file: str, between_divisor: float, object_count_n: int, map_groups_rankings_list_file: str) -> None:
+def parse_groups_rankings_list(map_list_file: str, between_divisor: float, object_count_n: int, map_groups_rankings_list_file: str, update_entry: bool = False) -> None:
     map_list_file_path = os.path.join(get_lists_path(), map_list_file)
     map_ids = get_map_ids_from_file_path(map_list_file_path)
 
@@ -174,7 +174,7 @@ def parse_groups_rankings_list(map_list_file: str, between_divisor: float, objec
     for map_id in map_ids:
         try:
             print(f'Progress: {progress}/{len_map_ids}: {map_id}')
-            groups_ranking_df = get_groups_ranking_df(map_id, between_divisor, object_count_n)
+            groups_ranking_df = get_groups_ranking_df(map_id, between_divisor, object_count_n, update_entry)
             groups_rankings_list_df = pd.concat([groups_rankings_list_df, groups_ranking_df], ignore_index=True)
         except Exception as e:
             print(map_id, e)
@@ -192,6 +192,6 @@ def get_groups_rankings_list_df(map_list_file: str, between_divisor: float, obje
     map_groups_rankings_list_file = os.path.join(get_parsed_lists_path(), str(map_list_file_name) + f'_divisor_{between_divisor}_count_{object_count_n}_rankings.parquet')
     
     if not os.path.exists(map_groups_rankings_list_file) or update_entry:
-        parse_groups_rankings_list(map_list_file, between_divisor, object_count_n, map_groups_rankings_list_file)
+        parse_groups_rankings_list(map_list_file, between_divisor, object_count_n, map_groups_rankings_list_file, update_entry)
     
     return pd.read_parquet(map_groups_rankings_list_file)
