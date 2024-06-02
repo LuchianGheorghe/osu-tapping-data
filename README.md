@@ -19,10 +19,10 @@ get_groups_ranking_df(map_id=129891,
 # https://osu.ppy.sh/beatmapsets/39804#osu/129891 - Freedom Dive [FOUR DIMENSIONS]
 from tapping_data.groups_ranking_utility import compute_rank_distance, get_similar_maps_by_rank_distance
 
-get_similar_maps_by_rank_distance(map_list_file,
+get_similar_maps_by_rank_distance(map_list_file='all_maps_2015-2018.txt',  # list can be found under content/lists
                               target_map_id=129891,
-                              target_between_divisor=4.0,
-                              target_object_count_n=16,
+                              target_between_divisor=4.0,  # 1/4 rhythm
+                              target_object_count_n=16,    # groups of 9+ objects. Combined with above this means 1/4 streams
                               top_n=8,
                               visualize=False,
                               open_links=False)
