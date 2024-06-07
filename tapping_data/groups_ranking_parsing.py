@@ -32,7 +32,7 @@ def compute_times_between_n(map_id: int, between_divisor: float, object_count_n:
 
 
 def compute_freq_times_between_n(times_between_n: list[float]) -> dict[str: float]:
-    freq_times_between_n = {'1': 0, '2': 0, '4': 0, '8': 0}
+    freq_times_between_n = {'1': 0, '2': 0, '4': 0, '8': 0, '16': 0}
 
     for time in times_between_n:
         if time < 1:
@@ -41,8 +41,10 @@ def compute_freq_times_between_n(times_between_n: list[float]) -> dict[str: floa
             freq_times_between_n['2'] += 1
         elif time < 4:
             freq_times_between_n['4'] += 1
-        else:
+        elif time < 8:
             freq_times_between_n['8'] += 1
+        else:
+            freq_times_between_n['16'] += 1
 
     for freq in freq_times_between_n:
         freq_times_between_n[freq] = round(freq_times_between_n[freq] / len(times_between_n), 2)
@@ -97,18 +99,42 @@ def compute_indexed_freq_times_between_n(sorted_freq_times_between_n: dict[str: 
     return ranking_freq_times_between_n
 
 
+def compute_inverse_indexed_freq_times_between_n(indexed_freq_times_between_n: dict[str: float]) -> dict[str: float]:
+    inverse_indexed_freq_times_between_n = {}
+    
+    for key, value in indexed_freq_times_between_n.items():
+        # inverse_indexed_freq_times_between_n[key] = pow(2, len(indexed_freq_times_between_n) - value)
+        inverse_indexed_freq_times_between_n[key] = len(indexed_freq_times_between_n) - value
+    
+    return inverse_indexed_freq_times_between_n
+
+
+def compute_normalized_inverse_indexed_freq_times_between_n(inverse_indexed_freq_times_between_n: dict[str: float], sorted_freq_times_between_n: dict[str: float]) -> dict[str: float]:
+    normalized_inverse_indexed_freq_times_between_n = {}
+    
+    for key, value in inverse_indexed_freq_times_between_n.items():
+        normalized_inverse_indexed_freq_times_between_n[key] = round(sorted_freq_times_between_n[key] * value, 2)
+    
+    return normalized_inverse_indexed_freq_times_between_n
+
+
 def map_id_to_ranking(map_id: float, between_divisor: float, object_count_n: int, debug: bool = False) -> list[float]:
     times_between_n = compute_times_between_n(map_id, between_divisor, object_count_n)
     freq_times_between_n = compute_freq_times_between_n(times_between_n)
     sorted_freq_times_between_n = dict(sorted(freq_times_between_n.items(), key=lambda item: item[1], reverse=True))
     indexed_freq_times_between_n = compute_indexed_freq_times_between_n(sorted_freq_times_between_n)
+    inverse_indexed_freq_times_between_n = compute_inverse_indexed_freq_times_between_n(indexed_freq_times_between_n)
+    normalized_inverse_indexed_freq_times_between_n = compute_normalized_inverse_indexed_freq_times_between_n(inverse_indexed_freq_times_between_n, sorted_freq_times_between_n)
 
     if debug:
         print(map_id)
-        print(sorted_freq_times_between_n, indexed_freq_times_between_n)
-        print(list(indexed_freq_times_between_n), list(indexed_freq_times_between_n.values()))
+        print(f'{sorted_freq_times_between_n = }')
+        print(f'{indexed_freq_times_between_n = }')
+        print(f'{inverse_indexed_freq_times_between_n = }')
+        print(f'{normalized_inverse_indexed_freq_times_between_n = }')
+        print()
 
-    return indexed_freq_times_between_n
+    return normalized_inverse_indexed_freq_times_between_n
 
 
 def selected_group_count(map_id: int, between_divisor: float, object_count_n: int) -> int:

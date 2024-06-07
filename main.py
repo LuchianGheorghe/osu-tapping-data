@@ -11,24 +11,22 @@ import matplotlib.pyplot as plt
 def main(*map_ids, map_list_file=None):
 	if map_list_file:
 		groups_rankings_list_df = get_groups_rankings_list_df(map_list_file, between_divisor=4.0, object_count_n=16, update_entry=False)
-		print(groups_rankings_list_df)
-		
-		# get_similar_maps_by_rank_distance(map_list_file, target_map_id=129891, target_between_divisor=4.0, target_object_count_n=16, top_n=8, visualize=False, open_links=False)
+		get_similar_maps_by_rank_distance(map_list_file, target_map_id=221777, target_between_divisor=4.0, target_object_count_n=16, top_n=4, visualize=True, open_links=False)
 	else:
 		for map_id in map_ids:
-			groups_ranking_df = get_groups_ranking_df(map_id, between_divisor=4.0, object_count_n=16, update_entry=False)
+			groups_ranking_df = get_groups_ranking_df(map_id, between_divisor=4.0, object_count_n=16, update_entry=True)
 			print(groups_ranking_df)
 
-import pandas as pd
+
 if __name__ == '__main__':
 	try:
 		# print(map_id_to_ranking(129891, 4.0, 16))
 		# visualize_sections(get_groups_df(1521481))
 		# plt.show()
-		#main(map_list_file='all_maps_2015-2018.txt')
+		main(map_list_file='tourney_maps_list_1000.txt')
 
-		print(get_groups_ranking_df(map_id=129891, between_divisor=4.0, object_count_n=16, update_entry=True))
-		print(map_id_to_ranking(map_id=129891, between_divisor=4.0, object_count_n=16))
+		# print(get_groups_ranking_df(map_id=129891, between_divisor=4.0, object_count_n=16, update_entry=True))
+		# print(map_id_to_ranking(map_id=129891, between_divisor=4.0, object_count_n=16, debug=True))
 		# main(129891)
 		# from tapping_data.groups_parsing import visualize_all_groups, visualize_select_group
 		# visualize_all_groups(129891)
