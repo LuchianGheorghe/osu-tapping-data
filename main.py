@@ -1,35 +1,59 @@
 from tapping_data.objects_parsing import get_objects_df
 from tapping_data.groups_parsing import get_groups_df, visualize_all_groups, visualize_select_group
 from tapping_data.helpers import get_map_ids_from_file_path, get_lists_path, create_empty_series, round_divisor
-from tapping_data.groups_ranking_utility import compute_rank_distance, get_similar_maps_by_rank_distance
+from tapping_data.groups_ranking_utility import compute_rank_distance, compute_total_rank_distance, get_distance_matrix, get_similar_maps_by_rank_distance
 from tapping_data.groups_ranking_parsing import get_groups_ranking_df, get_groups_rankings_list_df, map_id_to_ranking
 
 from beatmap_reader import BeatmapIO
 import matplotlib.pyplot as plt
 
+import pandas as pd
+import statistics as st
 
 def main(*map_ids, map_list_file=None):
 	if map_list_file:
-		# groups_rankings_list_df = get_groups_rankings_list_df(map_list_file, between_divisor=4.0, object_count_n=8, update_entry=False)
-		get_similar_maps_by_rank_distance(map_list_file, target_map_id=221777, target_between_divisor=4.0, target_object_count_n=8, top_n=4, visualize=True, open_links=True)
-	else:
+		groups_rankings_list_df = get_groups_rankings_list_df(map_list_file, between_divisor=4.0, object_count_n=16, update_entry=False)
+		# print(groups_rankings_list_df.to_string())
+
+		# distance_matrix = get_distance_matrix(groups_rankings_list_df)
+		# print(distance_matrix)
+		# columns = ['map_id', 'distance_matrix_sum']
+		# df = pd.DataFrame(columns=columns)
+		# for i in range(len(distance_matrix)):
+		# 	map_id = groups_rankings_list_df.iloc[i]['map_id']
+		# 	distance_matrix_sum = st.mean(distance_matrix[i])
+		# 	row = create_empty_series(columns)
+		# 	row['map_id'] = map_id
+		# 	row['distance_matrix_sum'] = distance_matrix_sum
+		# 	df = pd.concat([df, row.to_frame().T], ignore_index=True)
+		# print(df.sort_values('distance_matrix_sum', ascending=False))
+		
+		get_similar_maps_by_rank_distance(map_list_file, target_map_id=1093078, target_between_divisor=4.0, target_object_count_n=16, top_n=4, visualize=False, open_links=False)
+	else:	
 		for map_id in map_ids:
-			groups_ranking_df = get_groups_ranking_df(map_id, between_divisor=4.0, object_count_n=16, update_entry=True)
-			print(groups_ranking_df)
+			groups_ranking_df = get_groups_ranking_df(map_id, 4.0, 16, update_entry=True)
+			print(groups_ranking_df.to_string())
+			print()
+			print(map_id_to_ranking(map_id, 4.0, 16, debug=True))
+			print()
 
 
 if __name__ == '__main__':
 	try:
 		# print(map_id_to_ranking(129891, 4.0, 16))
 		# visualize_sections(get_groups_df(1521481))
+
+		# visualize_all_groups(750244)
 		# plt.show()
-		main(map_list_file='all_maps_2015-2018.txt')
+		main(map_list_file='tourney_maps_list.txt')
 
 		# print(get_groups_ranking_df(map_id=129891, between_divisor=4.0, object_count_n=16, update_entry=True))
 		# print(map_id_to_ranking(map_id=129891, between_divisor=4.0, object_count_n=16, debug=True))
-		# main(129891)
+		# main(668662)
+
+		# print(compute_rank_distance(map_id_to_ranking(2793277, 4.0, 16), map_id_to_ranking(566829, 4.0, 16)))
 		# from tapping_data.groups_parsing import visualize_all_groups, visualize_select_group
-		# visualize_all_groups(129891)
+		
 		# visualize_select_group(visualize_all_groups, between_divisor=4, object_count_n=16)
 		# get_groups_df(129891)
 		# print(get_groups_df(1257904, update_entry=True))
@@ -41,6 +65,8 @@ if __name__ == '__main__':
 	# main(345099, 315354, 435350, 255694)  # natsu airman, sparkling daydream, choir jail, fantastic future
 	# main(918415, 898597, 1845874)  # feelin sky
 	# main(221777, 776951)
+	# main(1093078)   # light it up
+	# main(506357, 2275674)   # dawn of the dead goldenwing vs toumei dragon
 	# main(2983479, 3665005)  # lion heart vs glory days
 	# main(574471, 955864, 290581, 516322)  # best friends vs m flat vs diamond vs love sick
 	# main(668662, 2082018, 252236)  # ice angel vs blend s vs stream2

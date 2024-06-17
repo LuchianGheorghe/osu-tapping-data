@@ -99,17 +99,29 @@ def compute_indexed_freq_times_between_n(sorted_freq_times_between_n: dict[str: 
     return ranking_freq_times_between_n
 
 
-def compute_inverse_indexed_freq_times_between_n(indexed_freq_times_between_n: dict[str: float]) -> dict[str: float]:
+def compute_inversed_indexed_freq_times_between_n(indexed_freq_times_between_n: dict[str: float]) -> dict[str: float]:
     inverse_indexed_freq_times_between_n = {}
     
+    length = len(indexed_freq_times_between_n)
     for key, value in indexed_freq_times_between_n.items():
         # inverse_indexed_freq_times_between_n[key] = pow(2, len(indexed_freq_times_between_n) - value)
-        inverse_indexed_freq_times_between_n[key] = len(indexed_freq_times_between_n) - value
+        inverse_indexed_freq_times_between_n[key] = length - value - 1
     
     return inverse_indexed_freq_times_between_n
 
 
-def compute_normalized_inverse_indexed_freq_times_between_n(inverse_indexed_freq_times_between_n: dict[str: float], sorted_freq_times_between_n: dict[str: float]) -> dict[str: float]:
+def compute_scaled_inversed_indexed_freq_times_between_n(inverse_indexed_freq_times_between_n: dict[str: float]) -> dict[str: float]:
+    scaled_inversed_indexed_freq_times_between_n = {}
+    
+    length = len(inverse_indexed_freq_times_between_n)
+    for key, value in inverse_indexed_freq_times_between_n.items():
+        scaling_factor = (pow(2, length - 1) / int(key)) + 1
+        scaled_inversed_indexed_freq_times_between_n[key] = scaling_factor * value
+    
+    return scaled_inversed_indexed_freq_times_between_n
+
+
+def compute_normalized_inversed_indexed_freq_times_between_n(inverse_indexed_freq_times_between_n: dict[str: float], sorted_freq_times_between_n: dict[str: float]) -> dict[str: float]:
     normalized_inverse_indexed_freq_times_between_n = {}
     
     for key, value in inverse_indexed_freq_times_between_n.items():
@@ -123,14 +135,16 @@ def map_id_to_ranking(map_id: float, between_divisor: float, object_count_n: int
     freq_times_between_n = compute_freq_times_between_n(times_between_n)
     sorted_freq_times_between_n = dict(sorted(freq_times_between_n.items(), key=lambda item: item[1], reverse=True))
     indexed_freq_times_between_n = compute_indexed_freq_times_between_n(sorted_freq_times_between_n)
-    inverse_indexed_freq_times_between_n = compute_inverse_indexed_freq_times_between_n(indexed_freq_times_between_n)
-    normalized_inverse_indexed_freq_times_between_n = compute_normalized_inverse_indexed_freq_times_between_n(inverse_indexed_freq_times_between_n, sorted_freq_times_between_n)
+    inversed_indexed_freq_times_between_n = compute_inversed_indexed_freq_times_between_n(indexed_freq_times_between_n)
+    scaled_inversed_indexed_freq_times_between_n = compute_scaled_inversed_indexed_freq_times_between_n(inversed_indexed_freq_times_between_n)
+    normalized_inverse_indexed_freq_times_between_n = compute_normalized_inversed_indexed_freq_times_between_n(scaled_inversed_indexed_freq_times_between_n, sorted_freq_times_between_n)
 
     if debug:
         print(map_id)
         print(f'{sorted_freq_times_between_n = }')
         print(f'{indexed_freq_times_between_n = }')
-        print(f'{inverse_indexed_freq_times_between_n = }')
+        print(f'{inversed_indexed_freq_times_between_n = }')
+        print(f'{scaled_inversed_indexed_freq_times_between_n = }')
         print(f'{normalized_inverse_indexed_freq_times_between_n = }')
         print()
 
@@ -146,16 +160,26 @@ def selected_group_count(map_id: int, between_divisor: float, object_count_n: in
     ])
 
 
+def selected_group_bpm(map_id: int, between_divisor: float, object_count_n: int) -> int:
+    groups_df = get_groups_df(map_id)
+
+    return 60000 / groups_df.loc[
+        (groups_df['between_divisor'] == between_divisor) &
+        (groups_df['object_count_n'] == object_count_n)
+    ]['beat_length'].mean()
+
+
 def cast_types_groups_ranking(groups_ranking_df: pd.DataFrame) -> pd.DataFrame:
     groups_ranking_df['map_id'] = groups_ranking_df['map_id'].astype('int32')
     groups_ranking_df['group_type'] = groups_ranking_df['group_type'].astype('object')
-    groups_ranking_df['group_count'] = groups_ranking_df['group_count'].astype('int32')
     groups_ranking_df['ranking'] = groups_ranking_df['ranking'].astype('object')
+    groups_ranking_df['group_count'] = groups_ranking_df['group_count'].astype('int32')
+    groups_ranking_df['bpm'] = groups_ranking_df['bpm'].astype('float16')
     return groups_ranking_df
 
 
 def parse_groups_ranking(map_id: int, between_divisor: float, object_count_n: int, map_groups_ranking_file: str) -> None:
-    columns = ['map_id', 'group_type', 'group_count', 'ranking']
+    columns = ['map_id', 'group_type', 'ranking', 'group_count', 'bpm']
     groups_ranking_df = pd.DataFrame(columns=columns)
 
     ranking = map_id_to_ranking(map_id, between_divisor=between_divisor, object_count_n=object_count_n)
@@ -163,8 +187,9 @@ def parse_groups_ranking(map_id: int, between_divisor: float, object_count_n: in
 
     new_row['map_id'] = map_id
     new_row['group_type'] = f'divisor_{between_divisor}_count_{object_count_n}'
-    new_row['group_count'] = selected_group_count(map_id, between_divisor, object_count_n)
     new_row['ranking'] = ranking
+    new_row['group_count'] = selected_group_count(map_id, between_divisor, object_count_n)
+    new_row['bpm'] = selected_group_bpm(map_id, between_divisor, object_count_n)
 
     groups_ranking_df = pd.concat([groups_ranking_df, new_row.to_frame().T], ignore_index=True)
     groups_ranking_df = cast_types_groups_ranking(groups_ranking_df)
@@ -184,9 +209,10 @@ def get_groups_ranking_df(map_id: int, between_divisor: float, object_count_n: i
 def cast_types_groups_rankings_list(groups_rankings_list_df: pd.DataFrame) -> pd.DataFrame:
     groups_rankings_list_df['map_id'] = groups_rankings_list_df['map_id'].astype('int32')
     groups_rankings_list_df['group_type'] = groups_rankings_list_df['group_type'].astype('object')
-    groups_rankings_list_df['group_count'] = groups_rankings_list_df['group_count'].astype('int32')
     groups_rankings_list_df['ranking'] = groups_rankings_list_df['ranking'].astype('object')
-    groups_rankings_list_df['distance'] = groups_rankings_list_df['distance'].astype('int16')
+    groups_rankings_list_df['group_count'] = groups_rankings_list_df['group_count'].astype('int32')
+    groups_rankings_list_df['bpm'] = groups_rankings_list_df['bpm'].astype('float16')
+    groups_rankings_list_df['distance'] = groups_rankings_list_df['distance'].astype('float16')
     return groups_rankings_list_df
 
 
@@ -194,7 +220,7 @@ def parse_groups_rankings_list(map_list_file: str, between_divisor: float, objec
     map_list_file_path = os.path.join(get_lists_path(), map_list_file)
     map_ids = get_map_ids_from_file_path(map_list_file_path)
 
-    columns = ['map_id', 'group_type', 'group_count', 'ranking', 'distance']
+    columns = ['map_id', 'group_type', 'ranking', 'group_count', 'bpm', 'distance']
     groups_rankings_list_df = pd.DataFrame(columns=columns)
     
     len_map_ids = len(map_ids)
